@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sparkles as SparklesComponent } from "@/components/ui/sparkles";
 import { useCampaignResults } from "@/hooks/useCampaign";
 import {
   ArrowLeft,
@@ -33,6 +34,8 @@ import {
   Heart,
   Copy,
   Check,
+  Zap,
+  Star,
 } from "lucide-react";
 
 const platformIcons = {
@@ -91,117 +94,279 @@ export function CampaignResults() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 py-12">
-      <div className="container mx-auto px-4 max-w-7xl">
+    <div className="min-h-screen bg-slate-950 relative overflow-hidden">
+      {/* Enhanced Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
+      <SparklesComponent 
+        className="opacity-40" 
+        particleColor="#f472b6" 
+        particleDensity={60}
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-pink-900/10 via-transparent to-amber-900/10" />
+
+      {/* Header */}
+      <div className="relative z-50 bg-black/20 backdrop-blur-lg border-b border-white/10">
+        <div className="container mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-3"
+            >
+              <Button
+                variant="ghost"
+                onClick={() => navigate("/create")}
+                className="text-gray-300 hover:text-white hover:bg-white/10"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Create New Campaign
+              </Button>
+              <div className="w-px h-6 bg-gray-600" />
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-amber-500 rounded-lg flex items-center justify-center">
+                  <Star className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xl font-bold text-white">Campaign Results</span>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="flex items-center gap-3"
+            >
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+              >
+                <Share2 className="w-4 h-4 mr-2" />
+                Share
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm"
+                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+
+      <div className="container mx-auto px-6 py-12 relative z-10 max-w-7xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {/* Header */}
-          <div className="mb-8">
-            <Button
-              variant="ghost"
-              onClick={() => navigate("/create")}
-              className="mb-4"
+          {/* Hero Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-center mb-12"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-black/40 backdrop-blur-lg border border-green-500/30 mb-6"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Create New Campaign
-            </Button>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h1 className="text-4xl font-bold mb-2">Campaign Results</h1>
-                <p className="text-gray-600">
-                  Your AI-generated viral campaign is ready
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share
-                </Button>
-                <Button variant="outline" size="sm">
-                  <Download className="w-4 h-4 mr-2" />
-                  Export
-                </Button>
-              </div>
-            </div>
-          </div>
+              <Check className="w-5 h-5 text-green-400" />
+              <span className="text-sm font-medium text-white">
+                Campaign Complete
+              </span>
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            </motion.div>
+            
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-white">
+              <span className="bg-gradient-to-r from-pink-400 via-rose-400 to-amber-400 bg-clip-text text-transparent">
+                Viral Campaign
+              </span>
+              <span className="block text-3xl md:text-4xl mt-2">
+                Ready to Launch!
+              </span>
+            </h1>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+              Your AI-generated viral campaign is optimized for maximum engagement and ready to dominate social media
+            </p>
+          </motion.div>
 
           {/* Key Metrics */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-2">
-                  <Target className="h-8 w-8 text-purple-600" />
-                  <Badge variant="secondary">AI Prediction</Badge>
-                </div>
-                <p
-                  className={`text-2xl font-bold ${getViralProbabilityColor(
-                    results.performance_predictions.viral_probability
-                  )}`}
-                >
-                  {results.performance_predictions.viral_probability}
-                </p>
-                <p className="text-sm text-gray-600">Viral Probability</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-2">
-                  <Users className="h-8 w-8 text-blue-600" />
-                </div>
-                <p className="text-2xl font-bold">
-                  {results.performance_predictions.estimated_reach}
-                </p>
-                <p className="text-sm text-gray-600">Estimated Reach</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-2">
-                  <BarChart3 className="h-8 w-8 text-green-600" />
-                </div>
-                <p className="text-2xl font-bold">
-                  {results.performance_predictions.engagement_rate}
-                </p>
-                <p className="text-sm text-gray-600">Engagement Rate</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between mb-2">
-                  <DollarSign className="h-8 w-8 text-yellow-600" />
-                </div>
-                <p className="text-2xl font-bold">
-                  {results.performance_predictions.roi_prediction}
-                </p>
-                <p className="text-sm text-gray-600">ROI Prediction</p>
-              </CardContent>
-            </Card>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="mb-8"
+          >
+            <div className="text-center mb-8">
+              <motion.div
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/20 backdrop-blur-lg border border-pink-500/30 mb-4"
+              >
+                <Zap className="w-5 h-5 text-pink-400" />
+                <span className="text-sm font-medium text-white">
+                  Performance Predictions
+                </span>
+              </motion.div>
+              <h2 className="text-3xl font-bold text-white mb-2">AI-Powered Analytics</h2>
+              <p className="text-gray-300">Advanced metrics based on real-time trend analysis</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+              >
+                <Card className="bg-black/20 backdrop-blur-lg border border-gray-600/30 relative overflow-hidden group hover:border-pink-400/40 transition-all duration-300">
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <SparklesComponent 
+                      particleColor="#f472b6" 
+                      particleDensity={20}
+                      minSize={1}
+                      maxSize={3}
+                    />
+                  </div>
+                  <CardContent className="pt-6 relative z-10">
+                    <div className="flex items-center justify-between mb-3">
+                      <Target className="h-8 w-8 text-pink-400" />
+                      <Badge className="bg-pink-400/20 text-pink-300 border-pink-400/30">AI Prediction</Badge>
+                    </div>
+                    <p className={`text-3xl font-bold mb-2 ${
+                      getViralProbabilityColor(results.performance_predictions.viral_probability)
+                    }`}>
+                      {results.performance_predictions.viral_probability}
+                    </p>
+                    <p className="text-sm text-gray-400">Viral Probability</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+              >
+                <Card className="bg-black/20 backdrop-blur-lg border border-gray-600/30 relative overflow-hidden group hover:border-blue-400/40 transition-all duration-300">
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <SparklesComponent 
+                      particleColor="#3b82f6" 
+                      particleDensity={20}
+                      minSize={1}
+                      maxSize={3}
+                    />
+                  </div>
+                  <CardContent className="pt-6 relative z-10">
+                    <div className="flex items-center justify-between mb-3">
+                      <Users className="h-8 w-8 text-blue-400" />
+                    </div>
+                    <p className="text-3xl font-bold text-white mb-2">
+                      {results.performance_predictions.estimated_reach}
+                    </p>
+                    <p className="text-sm text-gray-400">Estimated Reach</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+              >
+                <Card className="bg-black/20 backdrop-blur-lg border border-gray-600/30 relative overflow-hidden group hover:border-green-400/40 transition-all duration-300">
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <SparklesComponent 
+                      particleColor="#22c55e" 
+                      particleDensity={20}
+                      minSize={1}
+                      maxSize={3}
+                    />
+                  </div>
+                  <CardContent className="pt-6 relative z-10">
+                    <div className="flex items-center justify-between mb-3">
+                      <BarChart3 className="h-8 w-8 text-green-400" />
+                    </div>
+                    <p className="text-3xl font-bold text-white mb-2">
+                      {results.performance_predictions.engagement_rate}
+                    </p>
+                    <p className="text-sm text-gray-400">Engagement Rate</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+              
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.7 }}
+              >
+                <Card className="bg-black/20 backdrop-blur-lg border border-gray-600/30 relative overflow-hidden group hover:border-yellow-400/40 transition-all duration-300">
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <SparklesComponent 
+                      particleColor="#fbbf24" 
+                      particleDensity={20}
+                      minSize={1}
+                      maxSize={3}
+                    />
+                  </div>
+                  <CardContent className="pt-6 relative z-10">
+                    <div className="flex items-center justify-between mb-3">
+                      <DollarSign className="h-8 w-8 text-yellow-400" />
+                    </div>
+                    <p className="text-3xl font-bold text-white mb-2">
+                      {results.performance_predictions.roi_prediction}
+                    </p>
+                    <p className="text-sm text-gray-400">ROI Prediction</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            </div>
+          </motion.div>
 
           {/* Main Content Tabs */}
-          <Tabs defaultValue="trends" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="trends">Trends</TabsTrigger>
-              <TabsTrigger value="content">Content</TabsTrigger>
-              <TabsTrigger value="visuals">Visuals</TabsTrigger>
-              <TabsTrigger value="schedule">Schedule</TabsTrigger>
-            </TabsList>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+          >
+            <Tabs defaultValue="trends" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-4 bg-black/20 backdrop-blur-lg border border-gray-600/30">
+                <TabsTrigger value="trends" className="data-[state=active]:bg-pink-400/20 data-[state=active]:text-pink-300">Trends</TabsTrigger>
+                <TabsTrigger value="content" className="data-[state=active]:bg-pink-400/20 data-[state=active]:text-pink-300">Content</TabsTrigger>
+                <TabsTrigger value="visuals" className="data-[state=active]:bg-pink-400/20 data-[state=active]:text-pink-300">Visuals</TabsTrigger>
+                <TabsTrigger value="schedule" className="data-[state=active]:bg-pink-400/20 data-[state=active]:text-pink-300">Schedule</TabsTrigger>
+              </TabsList>
 
             {/* Trends Tab */}
-            <TabsContent value="trends" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <TrendingUp className="h-5 w-5" />
-                    Trend Analysis
-                  </CardTitle>
-                  <CardDescription>
-                    AI-discovered trends and viral opportunities
-                  </CardDescription>
-                </CardHeader>
+            <TabsContent value="trends" className="space-y-6">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <Card className="bg-black/20 backdrop-blur-lg border border-gray-600/30 relative overflow-hidden">
+                  <div className="absolute inset-0 opacity-20">
+                    <SparklesComponent 
+                      particleColor="#f472b6" 
+                      particleDensity={15}
+                      minSize={1}
+                      maxSize={3}
+                    />
+                  </div>
+                  <CardHeader className="relative z-10">
+                    <CardTitle className="flex items-center gap-2 text-white">
+                      <TrendingUp className="h-6 w-6 text-pink-400" />
+                      Trend Analysis
+                    </CardTitle>
+                    <CardDescription className="text-gray-300">
+                      AI-discovered trends and viral opportunities
+                    </CardDescription>
+                  </CardHeader>
                 <CardContent>
                   <div className="grid md:grid-cols-2 gap-6">
                     <div>
@@ -259,6 +424,7 @@ export function CampaignResults() {
                   </div>
                 </CardContent>
               </Card>
+              </motion.div>
             </TabsContent>
 
             {/* Content Tab */}
@@ -534,6 +700,7 @@ export function CampaignResults() {
               </Card>
             </TabsContent>
           </Tabs>
+          </motion.div>
 
           {/* Performance Predictions Details */}
           <Card className="mt-8">

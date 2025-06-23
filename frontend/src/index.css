@@ -3,36 +3,46 @@
 @tailwind utilities;
 
 :root {
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --primary: 222.2 47.4% 11.2%;
+  /* Dark theme - primary colors */
+  --background: 222 47% 6%;
+  --foreground: 210 40% 98%;
+  --card: 222 47% 8%;
+  --card-foreground: 210 40% 98%;
+  --popover: 222 47% 8%;
+  --popover-foreground: 210 40% 98%;
+  --primary: 330 85% 65%;
   --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222.2 47.4% 11.2%;
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222.2 47.4% 11.2%;
-  --destructive: 0 84.2% 60.2%;
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
+  --accent: 217 33% 17%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 63% 31%;
   --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 222.2 84% 4.9%;
-  --radius: 0.5rem;
+  --border: 217 33% 20%;
+  --input: 217 33% 20%;
+  --ring: 330 85% 65%;
+  --radius: 0.75rem;
 
-  /* Custom colors */
-  --primary-blue: #3b82f6;
-  --primary-purple: #8b5cf6;
-  --primary-green: #10b981;
-  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-success: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --gradient-viral: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  /* Custom dark theme colors */
+  --primary-pink: #f472b6;
+  --primary-rose: #fb7185;
+  --primary-gold: #fbbf24;
+  --primary-amber: #f59e0b;
+  --dark-bg: #0f0f14;
+  --dark-card: #1a1a22;
+  --dark-border: #2a2a35;
+  
+  /* Enhanced gradients for dark theme */
+  --gradient-primary: linear-gradient(135deg, #f472b6 0%, #fb7185 50%, #fbbf24 100%);
+  --gradient-hero: linear-gradient(135deg, #0f0f14 0%, #1a1a22 50%, #2a2a35 100%);
+  --gradient-viral: linear-gradient(135deg, #f472b6 0%, #fb7185 100%);
+  --gradient-gold: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  
+  /* Status colors for dark theme */
   --status-pending: #f59e0b;
-  --status-running: #3b82f6;
+  --status-running: #f472b6;
   --status-completed: #10b981;
   --status-error: #ef4444;
 }
@@ -69,6 +79,12 @@ body {
     Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: hsl(var(--background));
+  background: #0f0f14;
   color: hsl(var(--foreground));
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+#root {
+  min-height: 100vh;
 }
