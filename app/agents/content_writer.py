@@ -62,12 +62,12 @@ class ContentWriterAgent(BaseAgent):
                 # Small delay between platform generations to avoid rate limits
                 await asyncio.sleep(0.5)
             
-            # Create final content result
+            # Create final content result as dictionary for better compatibility
             content_result = await self._create_content_result(platform_contents)
             
             self.logger.info("Content generation completed successfully")
             return {
-                'content': content_result,
+                'content': content_result.dict(),
                 'metadata': {
                     'generation_timestamp': datetime.utcnow().isoformat(),
                     'platforms_generated': len(platform_contents),
@@ -140,7 +140,7 @@ class ContentWriterAgent(BaseAgent):
                     ))
             
             # Enhance hashtags with trend data
-            enhanced_hashtags = self._enhance_hashtags(hashtags, trend_data, platform)
+            enhanced_hashtags = self._enhance_hashtags(hashtags, trend_data, platform, agent_input.industry)
             
             return PlatformContent(
                 text=main_text,
@@ -170,24 +170,38 @@ class ContentWriterAgent(BaseAgent):
         self,
         original_hashtags: List[str],
         trend_data: Dict[str, Any],
-        platform: str
+        platform: str,
+        industry: str = ""
     ) -> List[str]:
         """Enhance hashtags with trending data."""
         enhanced_hashtags = list(original_hashtags)
         
-        # Add trending hashtags
+        # Add trending hashtags (more generous)
         trending_hashtags = trend_data.get('trending_hashtags', [])
-        for hashtag in trending_hashtags[:3]:  # Add up to 3 trending hashtags
-            if hashtag not in enhanced_hashtags and len(enhanced_hashtags) < 10:
+        for hashtag in trending_hashtags[:5]:  # Add up to 5 trending hashtags
+            if hashtag not in enhanced_hashtags and len(enhanced_hashtags) < 20:
                 enhanced_hashtags.append(hashtag)
         
-        # Platform-specific hashtag optimization
+        # Platform-specific hashtag optimization (more generous)
         platform_hashtags = self._get_platform_specific_hashtags(platform)
         for hashtag in platform_hashtags:
-            if hashtag not in enhanced_hashtags and len(enhanced_hashtags) < 8:
+            if hashtag not in enhanced_hashtags and len(enhanced_hashtags) < 18:
                 enhanced_hashtags.append(hashtag)
         
-        return enhanced_hashtags[:10]  # Limit to 10 hashtags
+        # Add industry-specific hashtags
+        if industry:
+            industry_hashtags = self._get_industry_hashtags(industry)
+            for hashtag in industry_hashtags:
+                if hashtag not in enhanced_hashtags and len(enhanced_hashtags) < 16:
+                    enhanced_hashtags.append(hashtag)
+        
+        # Add engagement-boosting hashtags
+        engagement_hashtags = self._get_engagement_hashtags(platform)
+        for hashtag in engagement_hashtags:
+            if hashtag not in enhanced_hashtags and len(enhanced_hashtags) < 15:
+                enhanced_hashtags.append(hashtag)
+        
+        return enhanced_hashtags[:15]  # Increased limit to 15 hashtags
     
     def _get_platform_specific_hashtags(self, platform: str) -> List[str]:
         """Get platform-specific hashtags."""
@@ -200,6 +214,33 @@ class ContentWriterAgent(BaseAgent):
         }
         
         return platform_hashtags.get(platform.lower(), [])
+    
+    def _get_industry_hashtags(self, industry: str) -> List[str]:
+        """Get industry-specific hashtags."""
+        industry_hashtags = {
+            'food & beverage': ['#foodie', '#delicious', '#restaurant', '#chef', '#cuisine'],
+            'technology': ['#tech', '#innovation', '#startup', '#digital', '#software'],
+            'retail': ['#shopping', '#fashion', '#style', '#deals', '#store'],
+            'healthcare': ['#health', '#wellness', '#medical', '#care', '#safety'],
+            'finance': ['#finance', '#investment', '#money', '#banking', '#wealth'],
+            'education': ['#education', '#learning', '#student', '#knowledge', '#school'],
+            'real estate': ['#realestate', '#property', '#home', '#investment', '#luxury'],
+            'automotive': ['#automotive', '#cars', '#driving', '#performance', '#luxury']
+        }
+        
+        return industry_hashtags.get(industry.lower(), ['#business', '#professional'])
+    
+    def _get_engagement_hashtags(self, platform: str) -> List[str]:
+        """Get engagement-boosting hashtags."""
+        engagement_hashtags = {
+            'instagram': ['#love', '#amazing', '#beautiful', '#inspiration', '#motivation'],
+            'twitter': ['#MondayMotivation', '#ThrowbackThursday', '#FollowFriday', '#WisdomWednesday', '#TuesdayTips'],
+            'linkedin': ['#leadership', '#success', '#growth', '#innovation', '#teamwork'],
+            'facebook': ['#ThankfulThursday', '#FeelGoodFriday', '#MotivationalMonday', '#WisdomWednesday', '#transformation'],
+            'tiktok': ['#foryou', '#challenge', '#duet', '#funny', '#creative']
+        }
+        
+        return engagement_hashtags.get(platform.lower(), ['#motivation', '#success', '#growth'])
     
     def _estimate_engagement_score(self, text: str, platform: str) -> float:
         """Estimate engagement score for content."""

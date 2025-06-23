@@ -40,7 +40,6 @@ import {
   Twitter,
   Facebook,
   Linkedin,
-  Music2,
   CheckCircle,
   Zap,
   Wand2,
@@ -55,13 +54,6 @@ const platforms = [
     icon: Instagram,
     color: "text-pink-600",
     description: "Visual storytelling with high engagement",
-  },
-  { 
-    id: "tiktok", 
-    name: "TikTok", 
-    icon: Music2, 
-    color: "text-gray-900",
-    description: "Viral short-form video content"
   },
   { 
     id: "facebook", 
@@ -244,9 +236,11 @@ export function CampaignCreate() {
               </Button>
               <Separator orientation="vertical" className="h-6" />
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-amber-500 rounded-lg flex items-center justify-center">
-                  <Rocket className="w-5 h-5 text-white" />
-                </div>
+                <img 
+                  src="/vyralflow.png" 
+                  alt="VyralFlow AI Logo" 
+                  className="w-8 h-8 object-contain"
+                />
                 <span className="text-xl font-bold text-white">Create Campaign</span>
               </div>
             </motion.div>

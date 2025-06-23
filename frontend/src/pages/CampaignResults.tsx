@@ -15,11 +15,7 @@ import { Sparkles as SparklesComponent } from "@/components/ui/sparkles";
 import { useCampaignResults } from "@/hooks/useCampaign";
 import {
   ArrowLeft,
-  Download,
-  Share2,
-  TrendingUp,
   Hash,
-  Clock,
   Target,
   Users,
   DollarSign,
@@ -28,7 +24,6 @@ import {
   Twitter,
   Facebook,
   Linkedin,
-  Music2,
   Image as ImageIcon,
   Calendar,
   Heart,
@@ -40,7 +35,6 @@ import {
 
 const platformIcons = {
   instagram: Instagram,
-  tiktok: Music2,
   facebook: Facebook,
   linkedin: Linkedin,
   twitter: Twitter,
@@ -134,35 +128,15 @@ export function CampaignResults() {
               </Button>
               <div className="w-px h-6 bg-gray-600" />
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-pink-500 to-amber-500 rounded-lg flex items-center justify-center">
-                  <Star className="w-5 h-5 text-white" />
-                </div>
+                <img 
+                  src="/vyralflow.png" 
+                  alt="VyralFlow AI Logo" 
+                  className="w-8 h-8 object-contain"
+                />
                 <span className="text-xl font-bold text-white">Campaign Results</span>
               </div>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-3"
-            >
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
-              >
-                <Share2 className="w-4 h-4 mr-2" />
-                Share
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="border-gray-600 text-gray-300 hover:bg-gray-700 hover:text-white"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                Export
-              </Button>
-            </motion.div>
           </div>
         </div>
       </div>
@@ -206,138 +180,6 @@ export function CampaignResults() {
             </p>
           </motion.div>
 
-          {/* Key Metrics */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="mb-8"
-          >
-            <div className="text-center mb-8">
-              <motion.div
-                initial={{ scale: 0.9 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-black/20 backdrop-blur-lg border border-pink-500/30 mb-4"
-              >
-                <Zap className="w-5 h-5 text-pink-400" />
-                <span className="text-sm font-medium text-white">
-                  Performance Predictions
-                </span>
-              </motion.div>
-              <h2 className="text-3xl font-bold text-white mb-2">AI-Powered Analytics</h2>
-              <p className="text-gray-300">Advanced metrics based on real-time trend analysis</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-              >
-                <Card className="bg-black/20 backdrop-blur-lg border border-gray-600/30 relative overflow-hidden group hover:border-pink-400/40 transition-all duration-300">
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <SparklesComponent 
-                      particleColor="#f472b6" 
-                      particleDensity={20}
-                      minSize={1}
-                      maxSize={3}
-                    />
-                  </div>
-                  <CardContent className="pt-6 relative z-10">
-                    <div className="flex items-center justify-between mb-3">
-                      <Target className="h-8 w-8 text-pink-400" />
-                      <Badge className="bg-pink-400/20 text-pink-300 border-pink-400/30">AI Prediction</Badge>
-                    </div>
-                    <p className={`text-3xl font-bold mb-2 ${
-                      getViralProbabilityColor(safelyGet(results, 'performance_predictions.viral_probability', '0%'))
-                    }`}>
-                      {safelyGet(results, 'performance_predictions.viral_probability', '0%')}
-                    </p>
-                    <p className="text-sm text-gray-400">Viral Probability</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-              >
-                <Card className="bg-black/20 backdrop-blur-lg border border-gray-600/30 relative overflow-hidden group hover:border-blue-400/40 transition-all duration-300">
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <SparklesComponent 
-                      particleColor="#3b82f6" 
-                      particleDensity={20}
-                      minSize={1}
-                      maxSize={3}
-                    />
-                  </div>
-                  <CardContent className="pt-6 relative z-10">
-                    <div className="flex items-center justify-between mb-3">
-                      <Users className="h-8 w-8 text-blue-400" />
-                    </div>
-                    <p className="text-3xl font-bold text-white mb-2">
-                      {safelyGet(results, 'performance_predictions.estimated_reach', 'N/A')}
-                    </p>
-                    <p className="text-sm text-gray-400">Estimated Reach</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-              >
-                <Card className="bg-black/20 backdrop-blur-lg border border-gray-600/30 relative overflow-hidden group hover:border-green-400/40 transition-all duration-300">
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <SparklesComponent 
-                      particleColor="#22c55e" 
-                      particleDensity={20}
-                      minSize={1}
-                      maxSize={3}
-                    />
-                  </div>
-                  <CardContent className="pt-6 relative z-10">
-                    <div className="flex items-center justify-between mb-3">
-                      <BarChart3 className="h-8 w-8 text-green-400" />
-                    </div>
-                    <p className="text-3xl font-bold text-white mb-2">
-                      {safelyGet(results, 'performance_predictions.engagement_rate', 'N/A')}
-                    </p>
-                    <p className="text-sm text-gray-400">Engagement Rate</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.7 }}
-              >
-                <Card className="bg-black/20 backdrop-blur-lg border border-gray-600/30 relative overflow-hidden group hover:border-yellow-400/40 transition-all duration-300">
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <SparklesComponent 
-                      particleColor="#fbbf24" 
-                      particleDensity={20}
-                      minSize={1}
-                      maxSize={3}
-                    />
-                  </div>
-                  <CardContent className="pt-6 relative z-10">
-                    <div className="flex items-center justify-between mb-3">
-                      <DollarSign className="h-8 w-8 text-yellow-400" />
-                    </div>
-                    <p className="text-3xl font-bold text-white mb-2">
-                      {safelyGet(results, 'performance_predictions.roi_prediction', 'N/A')}
-                    </p>
-                    <p className="text-sm text-gray-400">ROI Prediction</p>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            </div>
-          </motion.div>
 
           {/* Main Content Tabs */}
           <motion.div
@@ -345,98 +187,12 @@ export function CampaignResults() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.8 }}
           >
-            <Tabs defaultValue="trends" className="space-y-6">
-              <TabsList className="grid w-full grid-cols-4 bg-black/20 backdrop-blur-lg border border-gray-600/30">
-                <TabsTrigger value="trends" className="data-[state=active]:bg-pink-400/20 data-[state=active]:text-pink-300">Trends</TabsTrigger>
+            <Tabs defaultValue="content" className="space-y-6">
+              <TabsList className="grid w-full grid-cols-2 bg-black/20 backdrop-blur-lg border border-gray-600/30">
                 <TabsTrigger value="content" className="data-[state=active]:bg-pink-400/20 data-[state=active]:text-pink-300">Content</TabsTrigger>
                 <TabsTrigger value="visuals" className="data-[state=active]:bg-pink-400/20 data-[state=active]:text-pink-300">Visuals</TabsTrigger>
-                <TabsTrigger value="schedule" className="data-[state=active]:bg-pink-400/20 data-[state=active]:text-pink-300">Schedule</TabsTrigger>
               </TabsList>
 
-            {/* Trends Tab */}
-            <TabsContent value="trends" className="space-y-6">
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6 }}
-              >
-                <Card className="bg-black/20 backdrop-blur-lg border border-gray-600/30 relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-20">
-                    <SparklesComponent 
-                      particleColor="#f472b6" 
-                      particleDensity={15}
-                      minSize={1}
-                      maxSize={3}
-                    />
-                  </div>
-                  <CardHeader className="relative z-10">
-                    <CardTitle className="flex items-center gap-2 text-white">
-                      <TrendingUp className="h-6 w-6 text-pink-400" />
-                      Trend Analysis
-                    </CardTitle>
-                    <CardDescription className="text-gray-300">
-                      AI-discovered trends and viral opportunities
-                    </CardDescription>
-                  </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="font-semibold mb-3">Trending Topics</h3>
-                      <div className="space-y-3">
-                        {safelyGet(results, 'trends.trending_topics', []).map((topic: any, index: number) => (
-                          <div
-                            key={index}
-                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                          >
-                            <div>
-                              <p className="font-medium">{safelyGet(topic, 'topic', `Topic ${index + 1}`)}</p>
-                              <p className="text-sm text-gray-600">
-                                {safelyGet(topic, 'trend_type', 'stable')}
-                              </p>
-                            </div>
-                            <Badge
-                              variant={
-                                safelyGet(topic, 'relevance_score', 0) > 85
-                                  ? "completed"
-                                  : "secondary"
-                              }
-                            >
-                              {safelyGet(topic, 'relevance_score', 0)}% match
-                            </Badge>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-3">Viral Elements</h3>
-                      <div className="bg-purple-50 rounded-lg p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Clock className="h-4 w-4 text-purple-600" />
-                          <p className="font-medium">Peak Engagement Window</p>
-                        </div>
-                        <p className="text-purple-900">
-                          {safelyGet(results, 'trends.peak_engagement_window', 'Not available')}
-                        </p>
-                      </div>
-                      <div className="mt-4">
-                        <p className="font-medium mb-2">Trending Hashtags</p>
-                        <div className="flex flex-wrap gap-2">
-                          {safelyGet(results, 'trends.trending_hashtags', []).map(
-                            (hashtag: string, index: number) => (
-                              <Badge key={index} variant="outline">
-                                <Hash className="h-3 w-3 mr-1" />
-                                {(hashtag || "").replace("#", "")}
-                              </Badge>
-                            )
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              </motion.div>
-            </TabsContent>
 
             {/* Content Tab */}
             <TabsContent value="content" className="space-y-4">
@@ -448,11 +204,12 @@ export function CampaignResults() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Tabs
-                    defaultValue={Object.keys(safelyGet(results, 'content', {}))[0] || "instagram"}
-                    className="w-full"
-                  >
-                    <TabsList className="grid grid-cols-5 w-full mb-4">
+                  {Object.keys(safelyGet(results, 'content', {})).length > 0 ? (
+                    <Tabs
+                      defaultValue={Object.keys(safelyGet(results, 'content', {}))[0] || "instagram"}
+                      className="w-full"
+                    >
+                    <TabsList className="grid w-full mb-4" style={{ gridTemplateColumns: `repeat(${Math.min(Object.keys(safelyGet(results, 'content', {})).length, 5)}, minmax(0, 1fr))` }}>
                       {Object.entries(safelyGet(results, 'content', {})).map(([platform]) => {
                         const Icon =
                           platformIcons[platform as keyof typeof platformIcons] || Instagram;
@@ -540,6 +297,12 @@ export function CampaignResults() {
                       )
                     )}
                   </Tabs>
+                  ) : (
+                    <div className="p-6 bg-gray-100 rounded-lg text-center">
+                      <p className="text-gray-600 mb-2">No content available yet.</p>
+                      <p className="text-sm text-gray-500">Content generation may still be in progress or failed to complete.</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
@@ -565,18 +328,33 @@ export function CampaignResults() {
                       </p>
                     </div>
                     <div>
-                      <h3 className="font-semibold mb-2">Color Palette</h3>
-                      <div className="flex gap-2">
-                        {safelyGet(results, 'visuals.color_palette', []).map((color: string, index: number) => (
-                          <div
+                      <h3 className="font-semibold mb-2 text-white">Color Palette</h3>
+                      <div className="flex flex-wrap gap-3">
+                        {(safelyGet(results, 'visuals.color_palette', []).length > 0 
+                          ? safelyGet(results, 'visuals.color_palette', [])
+                          : ['#f472b6', '#fbbf24', '#3b82f6', '#22c55e', '#8b5cf6', '#ef4444'] // Default brand colors
+                        ).map((color: string, index: number) => (
+                          <motion.div
                             key={index}
-                            className="w-16 h-16 rounded-lg shadow-sm flex items-center justify-center text-xs font-mono"
-                            style={{ backgroundColor: color }}
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 0.3, delay: index * 0.1 }}
+                            className="group relative"
                           >
-                            <span className="bg-white/80 px-1 rounded">
-                              {color}
-                            </span>
-                          </div>
+                            <div
+                              className="w-20 h-20 rounded-xl shadow-lg flex items-center justify-center text-xs font-mono cursor-pointer hover:scale-110 transition-transform duration-300 border-2 border-white/20"
+                              style={{ backgroundColor: color }}
+                              onClick={() => navigator.clipboard.writeText(color)}
+                              title={`Click to copy ${color}`}
+                            >
+                              <span className="bg-black/60 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                                {color}
+                              </span>
+                            </div>
+                            <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                              Click to copy
+                            </div>
+                          </motion.div>
                         ))}
                       </div>
                     </div>
@@ -599,9 +377,38 @@ export function CampaignResults() {
                               className="group relative rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow"
                             >
                               <img
-                                src={safelyGet(image, 'url', '')}
-                                alt={safelyGet(image, 'alt_description', '') || safelyGet(image, 'description', '')}
-                                className="w-full h-48 object-cover"
+                                src={(() => {
+                                  const imageUrl = safelyGet(image, 'url', '') || safelyGet(image, 'unsplash_url', '');
+                                  if (!imageUrl) return 'https://via.placeholder.com/400x300/374151/ffffff?text=No+Image';
+                                  
+                                  // Add optimization parameters for faster loading
+                                  if (imageUrl.includes('unsplash.com')) {
+                                    const separator = imageUrl.includes('?') ? '&' : '?';
+                                    return `${imageUrl}${separator}w=400&h=300&fit=crop&auto=format&q=80`;
+                                  }
+                                  return imageUrl;
+                                })()}
+                                alt={safelyGet(image, 'alt_description', '') || safelyGet(image, 'description', 'Campaign Image')}
+                                className="w-full h-48 object-cover transition-all duration-200"
+                                loading="eager"
+                                decoding="async"
+                                fetchpriority="high"
+                                onLoad={(e) => {
+                                  e.currentTarget.style.opacity = '1';
+                                  e.currentTarget.style.filter = 'blur(0px)';
+                                  console.log('Image loaded successfully:', e.currentTarget.src);
+                                }}
+                                onError={(e) => {
+                                  console.error('Image failed to load:', e.currentTarget.src);
+                                  e.currentTarget.src = 'https://via.placeholder.com/400x300/374151/ffffff?text=Image+Unavailable';
+                                  e.currentTarget.style.opacity = '1';
+                                  e.currentTarget.style.filter = 'blur(0px)';
+                                }}
+                                style={{ 
+                                  opacity: 0,
+                                  filter: 'blur(5px)',
+                                  transition: 'opacity 0.2s ease-in-out, filter 0.2s ease-in-out'
+                                }}
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                                 <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
@@ -634,134 +441,9 @@ export function CampaignResults() {
               </Card>
             </TabsContent>
 
-            {/* Schedule Tab */}
-            <TabsContent value="schedule" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Calendar className="h-5 w-5" />
-                    Optimal Posting Schedule
-                  </CardTitle>
-                  <CardDescription>
-                    AI-optimized timing for maximum engagement
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <h3 className="font-semibold mb-3">Best Days to Post</h3>
-                      <div className="space-y-2">
-                        {safelyGet(results, 'schedule.best_days', []).map((day: string, index: number) => (
-                          <div
-                            key={index}
-                            className="flex items-center gap-2 p-2 bg-green-50 rounded"
-                          >
-                            <Calendar className="h-4 w-4 text-green-600" />
-                            <span className="font-medium">{day}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold mb-3">
-                        Platform-Specific Times
-                      </h3>
-                      <div className="space-y-3">
-                        {safelyGet(results, 'schedule.optimal_times', []).map((time: any, index: number) => {
-                          const platform = safelyGet(time, 'platform', 'instagram');
-                          const Icon =
-                            platformIcons[
-                              platform as keyof typeof platformIcons
-                            ] || Instagram;
-                          return (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
-                            >
-                              <div className="flex items-center gap-3">
-                                <Icon className="h-5 w-5" />
-                                <div>
-                                  <p className="font-medium">{platform}</p>
-                                  <p className="text-sm text-gray-600">
-                                    {safelyGet(time, 'day', 'Any day')} at {safelyGet(time, 'time', 'Any time')}
-                                  </p>
-                                </div>
-                              </div>
-                              <Badge variant="secondary">
-                                {safelyGet(time, 'engagement_score', 0)}% engagement
-                              </Badge>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Clock className="h-4 w-4 text-blue-600" />
-                      <p className="font-medium">Posting Frequency</p>
-                    </div>
-                    <p className="text-blue-900">
-                      {safelyGet(results, 'schedule.posting_frequency', 'Regular posting schedule recommended')}
-                    </p>
-                    <p className="text-sm text-blue-700 mt-1">
-                      Timezone: {safelyGet(results, 'schedule.timezone', 'Local timezone')}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
           </Tabs>
           </motion.div>
 
-          {/* Performance Predictions Details */}
-          <Card className="mt-8">
-            <CardHeader>
-              <CardTitle>Detailed Performance Predictions</CardTitle>
-              <CardDescription>
-                AI-powered metrics breakdown for your campaign
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {Object.entries(
-                  safelyGet(results, 'performance_predictions.metrics_breakdown', {
-                    likes_estimate: "0+",
-                    shares_estimate: "0+",
-                    comments_estimate: "0+",
-                    impressions_estimate: "0"
-                  })
-                ).map(([metric, value]) => (
-                  <div
-                    key={metric}
-                    className="text-center p-4 bg-gray-50 rounded-lg"
-                  >
-                    <p className="text-2xl font-bold text-purple-600">
-                      {value}
-                    </p>
-                    <p className="text-sm text-gray-600 capitalize">
-                      {metric.replace("_estimate", "").replace("_", " ")}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-6 p-4 bg-green-50 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-green-900">
-                      Confidence Score
-                    </p>
-                    <p className="text-sm text-green-700">
-                      Based on AI analysis and market trends
-                    </p>
-                  </div>
-                  <Badge variant="completed" className="text-lg px-4 py-2">
-                    {safelyGet(results, 'performance_predictions.confidence_score', 75)}%
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Call to Action */}
           <Card className="mt-8 bg-gradient-to-r from-purple-600 to-blue-600 text-white">
@@ -780,14 +462,6 @@ export function CampaignResults() {
                     onClick={() => navigate("/create")}
                   >
                     Create Another Campaign
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="lg"
-                    className="bg-white/10 border-white/20 text-white hover:bg-white/20"
-                  >
-                    <Share2 className="w-4 h-4 mr-2" />
-                    Share Results
                   </Button>
                 </div>
               </div>

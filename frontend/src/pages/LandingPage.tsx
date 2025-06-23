@@ -22,9 +22,6 @@ import {
   Brain,
   Target,
   Wand2,
-  Zap,
-  BarChart3,
-  Users,
 } from "lucide-react";
 
 export function LandingPage() {
@@ -85,12 +82,6 @@ export function LandingPage() {
     },
   ];
 
-  const stats = [
-    { label: "Viral Probability", value: "82%", icon: Zap },
-    { label: "Average Reach", value: "150K+", icon: Users },
-    { label: "ROI Increase", value: "340%", icon: BarChart3 },
-    { label: "Time Saved", value: "5hrs", icon: Sparkles },
-  ];
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-slate-950">
@@ -108,9 +99,11 @@ export function LandingPage() {
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-3"
             >
-              <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-amber-500 rounded-lg flex items-center justify-center">
-                <Rocket className="w-6 h-6 text-white" />
-              </div>
+              <img 
+                src="/vyralflow.png" 
+                alt="VyralFlow AI Logo" 
+                className="w-10 h-10 object-contain"
+              />
               <span className="text-2xl font-bold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
                 VyralFlow AI
               </span>
@@ -236,27 +229,6 @@ export function LandingPage() {
                 </motion.div>
               </motion.div>
 
-              {/* Stats Row */}
-              <motion.div
-                className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto mb-16"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.8 }}
-              >
-                {stats.map((stat, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.8 + index * 0.1 }}
-                    className="text-center p-6 bg-black/20 backdrop-blur-lg rounded-2xl border border-white/10 hover:border-pink-400/30 transition-all duration-300"
-                  >
-                    <stat.icon className="w-8 h-8 text-pink-400 mx-auto mb-3" />
-                    <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
-                    <div className="text-sm text-gray-400">{stat.label}</div>
-                  </motion.div>
-                ))}
-              </motion.div>
 
               {/* Trust Indicators */}
               <motion.div
@@ -474,7 +446,11 @@ export function LandingPage() {
                 viewport={{ once: true }}
                 className="inline-flex p-6 rounded-full bg-gradient-to-r from-pink-500/20 to-amber-500/20 backdrop-blur-lg border border-pink-200/20 mb-8"
               >
-                <Rocket className="w-16 h-16 text-white" />
+                <img 
+                  src="/vyralflow.png" 
+                  alt="VyralFlow AI Logo" 
+                  className="w-16 h-16 object-contain"
+                />
               </motion.div>
 
               <h2 className="text-5xl md:text-6xl font-bold text-white mb-6">

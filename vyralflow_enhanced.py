@@ -355,7 +355,8 @@ async def force_complete_campaign(campaign_id: str):
                         {
                             'id': f'force_complete_{i}',
                             'description': f'Professional {campaign.get("industry", "business")} innovation concept',
-                            'unsplash_url': f'https://images.unsplash.com/photo-149736621654{i}-37526070297c',
+                            'url': f'https://images.unsplash.com/photo-149736621654{i}-37526070297c?w=1080',
+                            'unsplash_url': f'https://images.unsplash.com/photo-149736621654{i}-37526070297c?w=1080',
                             'photographer': f'Sample Photographer {i}',
                             'source': 'force_complete_fallback'
                         } for i in range(1, 6)
@@ -528,6 +529,7 @@ async def process_enhanced_campaign(campaign_id: str, request: CampaignRequest):
                     "total_images_found": len(visual_suggestions),
                     "search_terms_used": search_terms,
                     "recommended_style": f"Modern {request.industry} aesthetic with innovation themes",
+                    "color_palette": _generate_cohesive_color_palette(request.industry, request.brand_voice),
                     "color_analysis": "Dynamic colors optimized for engagement",
                     "visual_concepts": [
                         "Innovation workspace",
@@ -607,6 +609,38 @@ async def _generate_simple_platform_content(request: CampaignRequest, platform: 
         print(f"Simple content generation failed for {platform}: {e}")
         return _get_fallback_content(request, platform)
 
+def _generate_cohesive_color_palette(industry: str, brand_voice: str) -> List[str]:
+    """Generate a cohesive, focused color palette based on industry and brand voice"""
+    # Industry-specific cohesive color palettes (harmonious colors that work together)
+    industry_palettes = {
+        'food & beverage': ['#D2691E', '#E67E22', '#F39C12', '#F7DC6F', '#FADBD8', '#FDEAA7'],  # Warm oranges/browns
+        'technology': ['#3498DB', '#5DADE2', '#85C1E9', '#AED6F1', '#D6EAF8', '#EBF5FB'],  # Tech blues
+        'retail': ['#E91E63', '#F06292', '#F8BBD9', '#FCE4EC', '#AD1457', '#880E4F'],  # Pink spectrum
+        'healthcare': ['#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', '#C8E6C9', '#E8F5E8'],  # Medical greens
+        'finance': ['#1976D2', '#42A5F5', '#64B5F6', '#90CAF9', '#BBDEFB', '#E3F2FD'],  # Trust blues
+        'education': ['#FF9800', '#FFB74D', '#FFCC02', '#FFE082', '#FFF3C4', '#FFF8E1'],  # Learning oranges
+        'real estate': ['#8D6E63', '#A1887F', '#BCAAA4', '#D7CCC8', '#EFEBE9', '#F3E5F5'],  # Earth tones
+        'automotive': ['#424242', '#616161', '#757575', '#9E9E9E', '#BDBDBD', '#E0E0E0']  # Metallic grays
+    }
+    
+    # Brand voice adjustments for color intensity
+    voice_adjustments = {
+        'professional': 0,  # Use standard palette
+        'friendly': 1,  # Slightly warmer
+        'casual': 2,  # More vibrant
+        'humorous': 3,  # Brightest variants
+        'authoritative': -1,  # More muted
+        'inspirational': 1  # Slightly brighter
+    }
+    
+    # Get base palette
+    base_palette = industry_palettes.get(industry.lower(), industry_palettes['technology'])
+    
+    # Apply brand voice adjustment (for simplicity, just return the base palette)
+    # In a more sophisticated version, we'd adjust saturation/brightness based on voice
+    
+    return base_palette
+
 def _get_fallback_content(request: CampaignRequest, platform: str) -> Dict[str, Any]:
     """Get reliable fallback content for any platform"""
     platform_templates = {
@@ -634,14 +668,6 @@ def _get_fallback_content(request: CampaignRequest, platform: str) -> Dict[str, 
             "engagement_tactics": ["professional tone", "industry insights", "thought leadership"],
             "viral_elements": ["industry leadership", "professional development", "innovation showcase"]
         },
-        "tiktok": {
-            "text": f"POV: You discover {request.business_name}'s game-changing approach to {request.industry} 🤯 #{request.industry.lower().replace(' ', '')} #innovation #gamechange #viral",
-            "hashtags": [f"#{request.industry.lower().replace(' ', '')}", "#innovation", "#gamechange", "#viral", "#fyp"],
-            "character_count": 120,
-            "content_pillars": ["entertainment", "discovery", "transformation"],
-            "engagement_tactics": ["POV format", "trending sounds", "visual hooks"],
-            "viral_elements": ["trending format", "discovery moment", "transformation reveal"]
-        }
     }
     
     return platform_templates.get(platform.lower(), platform_templates["instagram"])

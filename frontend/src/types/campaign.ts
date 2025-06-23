@@ -58,7 +58,6 @@ export interface TrendingTopic {
 // Content types
 export interface PlatformContent {
   instagram?: SocialMediaPost;
-  tiktok?: SocialMediaPost;
   facebook?: SocialMediaPost;
   linkedin?: SocialMediaPost;
   twitter?: SocialMediaPost;

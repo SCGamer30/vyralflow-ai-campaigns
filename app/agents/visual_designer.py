@@ -172,41 +172,119 @@ class VisualDesignerAgent(BaseAgent):
         agent_input: AgentInput,
         visual_themes: List[str]
     ) -> List[str]:
-        """Generate a color palette based on themes and industry."""
-        # Industry-specific color palettes
-        industry_colors = {
-            'food & beverage': ['#D2691E', '#8B4513', '#FF4500', '#F4A460', '#DEB887'],
-            'technology': ['#0066CC', '#4A90E2', '#50C878', '#6C7B7F', '#2C3E50'],
-            'retail': ['#E91E63', '#9C27B0', '#FF5722', '#FFC107', '#795548'],
-            'healthcare': ['#4CAF50', '#2196F3', '#00BCD4', '#009688', '#8BC34A'],
-            'finance': ['#1976D2', '#424242', '#37474F', '#546E7A', '#78909C'],
-            'education': ['#FF9800', '#F44336', '#9C27B0', '#3F51B5', '#009688'],
-            'real estate': ['#795548', '#607D8B', '#9E9E9E', '#CDDC39', '#FF5722'],
-            'automotive': ['#212121', '#424242', '#F44336', '#FF5722', '#607D8B']
+        """Generate a cohesive color palette based on themes and industry."""
+        # Industry-specific cohesive color palettes (each palette works harmoniously together)
+        industry_palettes = {
+            'food & beverage': {
+                'primary': '#D2691E',  # Warm orange
+                'palette': ['#D2691E', '#E67E22', '#F39C12', '#F7DC6F', '#FADBD8', '#FDEAA7']  # Warm orange tones
+            },
+            'technology': {
+                'primary': '#3498DB',  # Tech blue
+                'palette': ['#3498DB', '#5DADE2', '#85C1E9', '#AED6F1', '#D6EAF8', '#EBF5FB']  # Blue gradient
+            },
+            'retail': {
+                'primary': '#E91E63',  # Vibrant pink
+                'palette': ['#E91E63', '#F06292', '#F8BBD9', '#FCE4EC', '#AD1457', '#880E4F']  # Pink tones
+            },
+            'healthcare': {
+                'primary': '#4CAF50',  # Medical green
+                'palette': ['#4CAF50', '#66BB6A', '#81C784', '#A5D6A7', '#C8E6C9', '#E8F5E8']  # Green gradient
+            },
+            'finance': {
+                'primary': '#1976D2',  # Trust blue
+                'palette': ['#1976D2', '#42A5F5', '#64B5F6', '#90CAF9', '#BBDEFB', '#E3F2FD']  # Professional blue
+            },
+            'education': {
+                'primary': '#FF9800',  # Knowledge orange
+                'palette': ['#FF9800', '#FFB74D', '#FFCC02', '#FFE082', '#FFF3C4', '#FFF8E1']  # Warm learning tones
+            },
+            'real estate': {
+                'primary': '#8D6E63',  # Earthy brown
+                'palette': ['#8D6E63', '#A1887F', '#BCAAA4', '#D7CCC8', '#EFEBE9', '#F3E5F5']  # Natural earth tones
+            },
+            'automotive': {
+                'primary': '#424242',  # Sleek gray
+                'palette': ['#424242', '#616161', '#757575', '#9E9E9E', '#BDBDBD', '#E0E0E0']  # Metallic grays
+            }
         }
         
-        base_colors = industry_colors.get(agent_input.industry.lower(), ['#2196F3', '#4CAF50', '#FF9800'])
+        # Get the industry palette or default
+        industry_key = agent_input.industry.lower()
+        selected_palette = industry_palettes.get(industry_key, {
+            'primary': '#3498DB',
+            'palette': ['#3498DB', '#5DADE2', '#85C1E9', '#AED6F1', '#D6EAF8', '#EBF5FB']
+        })
         
-        # Theme-based color modifications
-        theme_colors = {
-            'warm': ['#FF6B35', '#F7931E', '#FFD23F'],
-            'cool': ['#4ECDC4', '#44A08D', '#093637'],
-            'professional': ['#2C3E50', '#34495E', '#7F8C8D'],
-            'energetic': ['#E74C3C', '#F39C12', '#E67E22'],
-            'calming': ['#3498DB', '#5DADE2', '#85C1E9'],
-            'luxurious': ['#8E44AD', '#9B59B6', '#BB8FCE']
+        # Determine theme adjustments for more cohesive colors
+        theme_adjustments = {
+            'warm': 'warmer',
+            'cool': 'cooler', 
+            'professional': 'muted',
+            'energetic': 'vibrant',
+            'calming': 'softer',
+            'luxurious': 'richer'
         }
         
-        # Add theme-based colors
-        final_colors = list(base_colors)
+        # Apply theme modifications to create variations of the base palette
+        primary_theme = None
         for theme in visual_themes[:3]:
             theme_key = theme.replace('-', '').replace(' ', '').lower()
-            if theme_key in theme_colors:
-                final_colors.extend(theme_colors[theme_key][:2])
+            if theme_key in theme_adjustments:
+                primary_theme = theme_adjustments[theme_key]
+                break
         
-        # Remove duplicates and limit to 6 colors
-        unique_colors = list(dict.fromkeys(final_colors))
-        return unique_colors[:6]
+        # Generate harmonious palette based on primary color and theme
+        base_palette = selected_palette['palette']
+        
+        if primary_theme == 'warmer':
+            # Shift towards warmer variants of the same colors
+            final_palette = base_palette[:4] + [self._adjust_color_warmth(base_palette[0], 0.1), self._adjust_color_warmth(base_palette[1], 0.1)]
+        elif primary_theme == 'cooler':
+            # Shift towards cooler variants
+            final_palette = base_palette[:4] + [self._adjust_color_warmth(base_palette[0], -0.1), self._adjust_color_warmth(base_palette[1], -0.1)]
+        elif primary_theme == 'vibrant':
+            # Use more saturated versions of the same colors
+            final_palette = [base_palette[0], base_palette[1]] + [self._adjust_color_saturation(color, 0.2) for color in base_palette[:4]]
+        elif primary_theme == 'softer':
+            # Use more muted versions
+            final_palette = [self._adjust_color_saturation(color, -0.3) for color in base_palette]
+        else:
+            # Use the original harmonious palette
+            final_palette = base_palette
+        
+        return final_palette[:6]
+    
+    def _adjust_color_warmth(self, hex_color: str, adjustment: float) -> str:
+        """Adjust color warmth while maintaining harmony."""
+        # Simple warmth adjustment - in a real implementation, you'd convert to HSL and adjust hue
+        # For now, return a predetermined warmer/cooler variant
+        warm_variants = {
+            '#3498DB': '#3F51B5',  # Blue to indigo
+            '#4CAF50': '#8BC34A',  # Green to lime
+            '#E91E63': '#F44336',  # Pink to red
+        }
+        return warm_variants.get(hex_color, hex_color)
+    
+    def _adjust_color_saturation(self, hex_color: str, adjustment: float) -> str:
+        """Adjust color saturation while maintaining harmony."""
+        # Simple saturation adjustment
+        if adjustment > 0:
+            # More vibrant
+            vibrant_variants = {
+                '#3498DB': '#2980B9',
+                '#4CAF50': '#388E3C',
+                '#E91E63': '#C2185B',
+            }
+            return vibrant_variants.get(hex_color, hex_color)
+        else:
+            # More muted
+            muted_variants = {
+                '#3498DB': '#5DADE2',
+                '#4CAF50': '#81C784',
+                '#E91E63': '#F06292',
+            }
+            return muted_variants.get(hex_color, hex_color)
     
     async def _get_image_suggestions(
         self,
