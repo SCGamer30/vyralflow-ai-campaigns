@@ -112,11 +112,13 @@ class AgentProgress(BaseModel):
 class TrendAnalysisResult(BaseModel):
     """Results from trend analysis agent."""
     
-    trending_topics: List[str] = Field(default_factory=list)
+    trending_topics: List[TrendingTopic] = Field(default_factory=list)
     trending_hashtags: List[str] = Field(default_factory=list)
     analysis_summary: str = Field(default="")
     confidence_score: float = Field(default=0.0, ge=0.0, le=1.0)
     data_sources: List[str] = Field(default_factory=list)
+    viral_probability: str = Field(default="0%")
+    peak_engagement_window: str = Field(default="Not available")
 
 
 class ContentVariation(BaseModel):
@@ -185,13 +187,40 @@ class ScheduleResult(BaseModel):
     posting_sequence: List[Dict[str, Any]] = Field(default_factory=list)
 
 
+class PerformancePredictions(BaseModel):
+    """Performance predictions for the campaign."""
+    
+    viral_probability: str = Field(default="0%")
+    estimated_reach: str = Field(default="0")
+    engagement_rate: str = Field(default="0%")
+    roi_prediction: str = Field(default="0%")
+    confidence_score: float = Field(default=0.0, ge=0.0, le=100.0)
+    metrics_breakdown: Dict[str, str] = Field(
+        default_factory=lambda: {
+            "likes_estimate": "0",
+            "shares_estimate": "0",
+            "comments_estimate": "0",
+            "impressions_estimate": "0"
+        }
+    )
+
+
+class TrendingTopic(BaseModel):
+    """Trending topic with relevance score and type."""
+    
+    topic: str
+    relevance_score: int = Field(default=0, ge=0, le=100)
+    trend_type: str = Field(default="stable")
+
+
 class CampaignResults(BaseModel):
     """Complete campaign results from all agents."""
     
-    trends: Optional[TrendAnalysisResult] = None
+    trends: Optional[Dict[str, Any]] = None
     content: Optional[ContentResult] = None
     visuals: Optional[VisualResult] = None
     schedule: Optional[ScheduleResult] = None
+    performance_predictions: Optional[PerformancePredictions] = None
 
 
 class CampaignResponse(BaseModel):

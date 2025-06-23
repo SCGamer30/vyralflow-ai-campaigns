@@ -6,7 +6,8 @@ import uuid
 from app.models.agent import AgentType, AgentInput, AgentOutput
 from app.models.campaign import (
     CampaignRequest, CampaignResponse, CampaignStatus, 
-    AgentProgress, AgentStatus, CampaignResults
+    AgentProgress, AgentStatus, CampaignResults,
+    PerformancePredictions, TrendingTopic
 )
 from app.agents.trend_analyzer import trend_analyzer_agent
 from app.agents.content_writer import content_writer_agent
@@ -208,6 +209,10 @@ class CampaignOrchestrator:
             
             if 'schedule' in agent_results:
                 campaign_results.schedule = agent_results['schedule']
+                
+            # Generate performance predictions based on available data
+            performance_predictions = self._generate_performance_predictions(agent_results)
+            campaign_results.performance_predictions = performance_predictions
             
             # Update campaign in database
             updates = {
@@ -439,6 +444,54 @@ class CampaignOrchestrator:
             List[str]: List of active campaign IDs
         """
         return list(self.active_campaigns.keys())
+    
+    def _generate_performance_predictions(self, agent_results: Dict[str, Any]) -> PerformancePredictions:
+        """
+        Generate performance predictions based on agent results.
+        
+        Args:
+            agent_results: Combined results from all agents
+            
+        Returns:
+            PerformancePredictions: Generated performance predictions
+        """
+        # Default values
+        viral_probability = "65%"
+        estimated_reach = "5,000-10,000"
+        engagement_rate = "3.2%"
+        roi_prediction = "2.5x"
+        confidence_score = 75.0
+        
+        # Adjust based on trend analysis if available
+        if 'trends' in agent_results:
+            trends = agent_results['trends']
+            
+            # Use viral probability from trends if available
+            if 'viral_probability' in trends:
+                viral_probability = trends['viral_probability']
+            
+            # Adjust confidence score based on trend confidence
+            if 'confidence_score' in trends:
+                # Scale from 0-1 to 0-100
+                trend_confidence = trends.get('confidence_score', 0.5) * 100
+                confidence_score = (confidence_score + trend_confidence) / 2
+        
+        # Generate metrics breakdown
+        metrics_breakdown = {
+            "likes_estimate": f"{int(float(viral_probability.replace('%', '')) * 50)}+",
+            "shares_estimate": f"{int(float(viral_probability.replace('%', '')) * 10)}+",
+            "comments_estimate": f"{int(float(viral_probability.replace('%', '')) * 15)}+",
+            "impressions_estimate": estimated_reach
+        }
+        
+        return PerformancePredictions(
+            viral_probability=viral_probability,
+            estimated_reach=estimated_reach,
+            engagement_rate=engagement_rate,
+            roi_prediction=roi_prediction,
+            confidence_score=confidence_score,
+            metrics_breakdown=metrics_breakdown
+        )
     
     async def health_check(self) -> Dict[str, Any]:
         """

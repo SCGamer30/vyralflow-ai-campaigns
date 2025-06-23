@@ -8,19 +8,31 @@ const API_BASE_URL = "http://localhost:8080/api";
 
 // Helper function for API calls
 async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options?.headers,
-    },
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...options?.headers,
+      },
+    });
 
-  if (!response.ok) {
-    throw new Error(`API call failed: ${response.statusText}`);
+    if (!response.ok) {
+      throw new Error(`API call failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    
+    // Basic validation of the response data
+    if (data === null || data === undefined) {
+      throw new Error("API returned empty response");
+    }
+    
+    return data as T;
+  } catch (error) {
+    console.error(`API error for ${endpoint}:`, error);
+    throw error;
   }
-
-  return response.json();
 }
 
 // Campaign API methods

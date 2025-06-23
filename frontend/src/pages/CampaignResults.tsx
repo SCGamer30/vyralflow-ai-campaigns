@@ -87,10 +87,21 @@ export function CampaignResults() {
   }
 
   const getViralProbabilityColor = (probability: string) => {
-    const value = parseInt(probability.match(/\d+/)?.[0] || "0");
+    const value = parseInt(probability?.match(/\d+/)?.[0] || "0");
     if (value >= 80) return "text-green-600";
     if (value >= 60) return "text-yellow-600";
     return "text-red-600";
+  };
+  
+  // Helper function to safely access nested properties
+  const safelyGet = (obj: any, path: string, defaultValue: any = null) => {
+    try {
+      const keys = path.split('.');
+      return keys.reduce((o, key) => (o && o[key] !== undefined) ? o[key] : defaultValue, obj);
+    } catch (e) {
+      console.error(`Error accessing path ${path}:`, e);
+      return defaultValue;
+    }
   };
 
   return (
@@ -239,9 +250,9 @@ export function CampaignResults() {
                       <Badge className="bg-pink-400/20 text-pink-300 border-pink-400/30">AI Prediction</Badge>
                     </div>
                     <p className={`text-3xl font-bold mb-2 ${
-                      getViralProbabilityColor(results.performance_predictions.viral_probability)
+                      getViralProbabilityColor(safelyGet(results, 'performance_predictions.viral_probability', '0%'))
                     }`}>
-                      {results.performance_predictions.viral_probability}
+                      {safelyGet(results, 'performance_predictions.viral_probability', '0%')}
                     </p>
                     <p className="text-sm text-gray-400">Viral Probability</p>
                   </CardContent>
@@ -267,7 +278,7 @@ export function CampaignResults() {
                       <Users className="h-8 w-8 text-blue-400" />
                     </div>
                     <p className="text-3xl font-bold text-white mb-2">
-                      {results.performance_predictions.estimated_reach}
+                      {safelyGet(results, 'performance_predictions.estimated_reach', 'N/A')}
                     </p>
                     <p className="text-sm text-gray-400">Estimated Reach</p>
                   </CardContent>
@@ -293,7 +304,7 @@ export function CampaignResults() {
                       <BarChart3 className="h-8 w-8 text-green-400" />
                     </div>
                     <p className="text-3xl font-bold text-white mb-2">
-                      {results.performance_predictions.engagement_rate}
+                      {safelyGet(results, 'performance_predictions.engagement_rate', 'N/A')}
                     </p>
                     <p className="text-sm text-gray-400">Engagement Rate</p>
                   </CardContent>
@@ -319,7 +330,7 @@ export function CampaignResults() {
                       <DollarSign className="h-8 w-8 text-yellow-400" />
                     </div>
                     <p className="text-3xl font-bold text-white mb-2">
-                      {results.performance_predictions.roi_prediction}
+                      {safelyGet(results, 'performance_predictions.roi_prediction', 'N/A')}
                     </p>
                     <p className="text-sm text-gray-400">ROI Prediction</p>
                   </CardContent>
@@ -372,25 +383,25 @@ export function CampaignResults() {
                     <div>
                       <h3 className="font-semibold mb-3">Trending Topics</h3>
                       <div className="space-y-3">
-                        {results.trends.trending_topics.map((topic, index) => (
+                        {safelyGet(results, 'trends.trending_topics', []).map((topic: any, index: number) => (
                           <div
                             key={index}
                             className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                           >
                             <div>
-                              <p className="font-medium">{topic.topic}</p>
+                              <p className="font-medium">{safelyGet(topic, 'topic', `Topic ${index + 1}`)}</p>
                               <p className="text-sm text-gray-600">
-                                {topic.trend_type}
+                                {safelyGet(topic, 'trend_type', 'stable')}
                               </p>
                             </div>
                             <Badge
                               variant={
-                                topic.relevance_score > 85
+                                safelyGet(topic, 'relevance_score', 0) > 85
                                   ? "completed"
                                   : "secondary"
                               }
                             >
-                              {topic.relevance_score}% match
+                              {safelyGet(topic, 'relevance_score', 0)}% match
                             </Badge>
                           </div>
                         ))}
@@ -404,17 +415,17 @@ export function CampaignResults() {
                           <p className="font-medium">Peak Engagement Window</p>
                         </div>
                         <p className="text-purple-900">
-                          {results.trends.peak_engagement_window}
+                          {safelyGet(results, 'trends.peak_engagement_window', 'Not available')}
                         </p>
                       </div>
                       <div className="mt-4">
                         <p className="font-medium mb-2">Trending Hashtags</p>
                         <div className="flex flex-wrap gap-2">
-                          {results.trends.trending_hashtags?.map(
-                            (hashtag, index) => (
+                          {safelyGet(results, 'trends.trending_hashtags', []).map(
+                            (hashtag: string, index: number) => (
                               <Badge key={index} variant="outline">
                                 <Hash className="h-3 w-3 mr-1" />
-                                {hashtag.replace("#", "")}
+                                {(hashtag || "").replace("#", "")}
                               </Badge>
                             )
                           )}
@@ -438,13 +449,13 @@ export function CampaignResults() {
                 </CardHeader>
                 <CardContent>
                   <Tabs
-                    defaultValue={Object.keys(results.content)[0]}
+                    defaultValue={Object.keys(safelyGet(results, 'content', {}))[0] || "instagram"}
                     className="w-full"
                   >
                     <TabsList className="grid grid-cols-5 w-full mb-4">
-                      {Object.entries(results.content).map(([platform]) => {
+                      {Object.entries(safelyGet(results, 'content', {})).map(([platform]) => {
                         const Icon =
-                          platformIcons[platform as keyof typeof platformIcons];
+                          platformIcons[platform as keyof typeof platformIcons] || Instagram;
                         return (
                           <TabsTrigger
                             key={platform}
@@ -460,8 +471,8 @@ export function CampaignResults() {
                         );
                       })}
                     </TabsList>
-                    {Object.entries(results.content).map(
-                      ([platform, content]) => (
+                    {Object.entries(safelyGet(results, 'content', {})).map(
+                      ([platform, content]: [string, any]) => (
                         <TabsContent key={platform} value={platform}>
                           <div className="space-y-4">
                             <div className="bg-gray-50 rounded-lg p-4">
@@ -471,7 +482,7 @@ export function CampaignResults() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() =>
-                                    handleCopyContent(content.text, platform)
+                                    handleCopyContent(safelyGet(content, 'text', ''), platform)
                                   }
                                 >
                                   {copiedText === platform ? (
@@ -488,29 +499,29 @@ export function CampaignResults() {
                                 </Button>
                               </div>
                               <p className="text-gray-700 whitespace-pre-wrap">
-                                {content.text}
+                                {safelyGet(content, 'text', 'No content available')}
                               </p>
                               <p className="text-sm text-gray-500 mt-2">
-                                {content.character_count} characters
+                                {safelyGet(content, 'character_count', 0)} characters
                               </p>
                             </div>
                             <div>
                               <h4 className="font-medium mb-2">Hashtags</h4>
                               <div className="flex flex-wrap gap-2">
-                                {content.hashtags.map((tag: string, index: number) => (
+                                {safelyGet(content, 'hashtags', []).map((tag: string, index: number) => (
                                   <Badge key={index} variant="secondary">
                                     {tag}
                                   </Badge>
                                 ))}
                               </div>
                             </div>
-                            {content.viral_elements && (
+                            {safelyGet(content, 'viral_elements', null) && (
                               <div>
                                 <h4 className="font-medium mb-2">
                                   Viral Elements
                                 </h4>
                                 <div className="grid grid-cols-2 gap-2">
-                                  {content.viral_elements.map(
+                                  {safelyGet(content, 'viral_elements', []).map(
                                     (element: string, index: number) => (
                                       <div
                                         key={index}
@@ -550,13 +561,13 @@ export function CampaignResults() {
                     <div>
                       <h3 className="font-semibold mb-2">Recommended Style</h3>
                       <p className="text-gray-600">
-                        {results.visuals.recommended_style}
+                        {safelyGet(results, 'visuals.recommended_style', 'Professional style with modern aesthetics')}
                       </p>
                     </div>
                     <div>
                       <h3 className="font-semibold mb-2">Color Palette</h3>
                       <div className="flex gap-2">
-                        {results.visuals.color_palette.map((color, index) => (
+                        {safelyGet(results, 'visuals.color_palette', []).map((color: string, index: number) => (
                           <div
                             key={index}
                             className="w-16 h-16 rounded-lg shadow-sm flex items-center justify-center text-xs font-mono"
@@ -572,13 +583,13 @@ export function CampaignResults() {
                     <div>
                       <h3 className="font-semibold mb-4">
                         Curated Images (
-                        {results.visuals.image_suggestions.length})
+                        {safelyGet(results, 'visuals.image_suggestions', []).length})
                       </h3>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {results.visuals.image_suggestions.map(
-                          (image, index) => (
+                        {safelyGet(results, 'visuals.image_suggestions', []).map(
+                          (image: any, index: number) => (
                             <motion.div
-                              key={image.id}
+                              key={safelyGet(image, 'id', `img_${index}`)}
                               initial={{ opacity: 0, scale: 0.9 }}
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{
@@ -588,27 +599,27 @@ export function CampaignResults() {
                               className="group relative rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-shadow"
                             >
                               <img
-                                src={image.url}
-                                alt={image.alt_description || image.description}
+                                src={safelyGet(image, 'url', '')}
+                                alt={safelyGet(image, 'alt_description', '') || safelyGet(image, 'description', '')}
                                 className="w-full h-48 object-cover"
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                                 <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
                                   <p className="text-sm font-medium truncate">
-                                    {image.description}
+                                    {safelyGet(image, 'description', 'Image')}
                                   </p>
                                   <div className="flex items-center justify-between mt-1">
                                     <a
-                                      href={image.photographer_url}
+                                      href={safelyGet(image, 'photographer_url', '#')}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       className="text-xs hover:underline"
                                     >
-                                      by {image.photographer}
+                                      by {safelyGet(image, 'photographer', 'Unknown')}
                                     </a>
                                     <div className="flex items-center gap-1 text-xs">
                                       <Heart className="h-3 w-3" />
-                                      {image.likes}
+                                      {safelyGet(image, 'likes', 0)}
                                     </div>
                                   </div>
                                 </div>
@@ -640,7 +651,7 @@ export function CampaignResults() {
                     <div>
                       <h3 className="font-semibold mb-3">Best Days to Post</h3>
                       <div className="space-y-2">
-                        {results.schedule.best_days.map((day, index) => (
+                        {safelyGet(results, 'schedule.best_days', []).map((day: string, index: number) => (
                           <div
                             key={index}
                             className="flex items-center gap-2 p-2 bg-green-50 rounded"
@@ -656,11 +667,12 @@ export function CampaignResults() {
                         Platform-Specific Times
                       </h3>
                       <div className="space-y-3">
-                        {results.schedule.optimal_times.map((time, index) => {
+                        {safelyGet(results, 'schedule.optimal_times', []).map((time: any, index: number) => {
+                          const platform = safelyGet(time, 'platform', 'instagram');
                           const Icon =
                             platformIcons[
-                              time.platform as keyof typeof platformIcons
-                            ];
+                              platform as keyof typeof platformIcons
+                            ] || Instagram;
                           return (
                             <div
                               key={index}
@@ -669,14 +681,14 @@ export function CampaignResults() {
                               <div className="flex items-center gap-3">
                                 <Icon className="h-5 w-5" />
                                 <div>
-                                  <p className="font-medium">{time.platform}</p>
+                                  <p className="font-medium">{platform}</p>
                                   <p className="text-sm text-gray-600">
-                                    {time.day} at {time.time}
+                                    {safelyGet(time, 'day', 'Any day')} at {safelyGet(time, 'time', 'Any time')}
                                   </p>
                                 </div>
                               </div>
                               <Badge variant="secondary">
-                                {time.engagement_score}% engagement
+                                {safelyGet(time, 'engagement_score', 0)}% engagement
                               </Badge>
                             </div>
                           );
@@ -690,10 +702,10 @@ export function CampaignResults() {
                       <p className="font-medium">Posting Frequency</p>
                     </div>
                     <p className="text-blue-900">
-                      {results.schedule.posting_frequency}
+                      {safelyGet(results, 'schedule.posting_frequency', 'Regular posting schedule recommended')}
                     </p>
                     <p className="text-sm text-blue-700 mt-1">
-                      Timezone: {results.schedule.timezone}
+                      Timezone: {safelyGet(results, 'schedule.timezone', 'Local timezone')}
                     </p>
                   </div>
                 </CardContent>
@@ -713,7 +725,12 @@ export function CampaignResults() {
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {Object.entries(
-                  results.performance_predictions.metrics_breakdown
+                  safelyGet(results, 'performance_predictions.metrics_breakdown', {
+                    likes_estimate: "0+",
+                    shares_estimate: "0+",
+                    comments_estimate: "0+",
+                    impressions_estimate: "0"
+                  })
                 ).map(([metric, value]) => (
                   <div
                     key={metric}
@@ -739,7 +756,7 @@ export function CampaignResults() {
                     </p>
                   </div>
                   <Badge variant="completed" className="text-lg px-4 py-2">
-                    {results.performance_predictions.confidence_score}%
+                    {safelyGet(results, 'performance_predictions.confidence_score', 75)}%
                   </Badge>
                 </div>
               </div>

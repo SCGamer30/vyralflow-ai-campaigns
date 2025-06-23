@@ -57,17 +57,17 @@ class VisualDesignerAgent(BaseAgent):
                 agent_input, visual_themes, color_palette
             )
             
-            # Compile final visual result
-            visual_result = VisualResult(
-                recommended_style=style_recommendations,
-                image_suggestions=image_suggestions,
-                color_palette=color_palette,
-                visual_themes=visual_themes
-            )
+            # Compile final visual result as a dictionary
+            visual_result = {
+                "recommended_style": style_recommendations,
+                "image_suggestions": image_suggestions,
+                "color_palette": color_palette,
+                "visual_themes": visual_themes
+            }
             
             self.logger.info("Visual design completed successfully")
             return {
-                'visuals': visual_result.dict(),
+                'visuals': visual_result,
                 'metadata': {
                     'design_timestamp': datetime.utcnow().isoformat(),
                     'images_found': len(image_suggestions),
@@ -212,7 +212,7 @@ class VisualDesignerAgent(BaseAgent):
         self,
         agent_input: AgentInput,
         visual_themes: List[str]
-    ) -> List[ImageSuggestion]:
+    ) -> List[Dict[str, Any]]:
         """Get image suggestions from Unsplash."""
         try:
             # Get photo suggestions based on campaign context
@@ -223,16 +223,21 @@ class VisualDesignerAgent(BaseAgent):
                 visual_themes=visual_themes
             )
             
-            # Convert to ImageSuggestion objects
+            # Convert to format expected by frontend
             image_suggestions = []
             for photo in photos[:10]:  # Limit to 10 suggestions
-                suggestion = ImageSuggestion(
-                    url=photo.get('urls', {}).get('regular', ''),
-                    description=photo.get('description', ''),
-                    tags=photo.get('tags', []),
-                    photographer=photo.get('user', {}).get('name', ''),
-                    source='unsplash'
-                )
+                # Format image data to match frontend expectations
+                suggestion = {
+                    "id": photo.get('id', f"img_{len(image_suggestions)}"),
+                    "url": photo.get('urls', {}).get('regular', ''),
+                    "description": photo.get('description', '') or photo.get('alt_description', '') or f"Image for {agent_input.business_name}",
+                    "alt_description": photo.get('alt_description', '') or photo.get('description', '') or f"Image for {agent_input.business_name}",
+                    "photographer": photo.get('user', {}).get('name', 'Unsplash Photographer'),
+                    "photographer_url": photo.get('user', {}).get('links', {}).get('html', 'https://unsplash.com'),
+                    "likes": photo.get('likes', 0),
+                    "width": photo.get('width', 800),
+                    "height": photo.get('height', 600)
+                }
                 image_suggestions.append(suggestion)
             
             self.logger.info(f"Found {len(image_suggestions)} image suggestions")
@@ -242,30 +247,42 @@ class VisualDesignerAgent(BaseAgent):
             self.logger.error(f"Failed to get image suggestions: {e}")
             return self._get_fallback_image_suggestions(agent_input)
     
-    def _get_fallback_image_suggestions(self, agent_input: AgentInput) -> List[ImageSuggestion]:
+    def _get_fallback_image_suggestions(self, agent_input: AgentInput) -> List[Dict[str, Any]]:
         """Get fallback image suggestions when Unsplash fails."""
         fallback_suggestions = [
-            ImageSuggestion(
-                url='https://via.placeholder.com/800x600/4a90e2/ffffff?text=Business+Image',
-                description=f'Professional {agent_input.industry} business image',
-                tags=[agent_input.industry, 'business', 'professional'],
-                photographer='Stock Photos',
-                source='placeholder'
-            ),
-            ImageSuggestion(
-                url='https://via.placeholder.com/800x600/50c878/ffffff?text=Campaign+Visual',
-                description=f'{agent_input.business_name} campaign visual',
-                tags=['campaign', 'marketing', agent_input.industry],
-                photographer='Stock Photos',
-                source='placeholder'
-            ),
-            ImageSuggestion(
-                url='https://via.placeholder.com/800x600/e74c3c/ffffff?text=Brand+Image',
-                description=f'{agent_input.business_name} brand representation',
-                tags=['brand', 'identity', 'business'],
-                photographer='Stock Photos',
-                source='placeholder'
-            )
+            {
+                "id": "fallback_1",
+                "url": 'https://via.placeholder.com/800x600/4a90e2/ffffff?text=Business+Image',
+                "description": f'Professional {agent_input.industry} business image',
+                "alt_description": f'Professional {agent_input.industry} business image',
+                "photographer": 'Stock Photos',
+                "photographer_url": 'https://placeholder.com',
+                "likes": 0,
+                "width": 800,
+                "height": 600
+            },
+            {
+                "id": "fallback_2",
+                "url": 'https://via.placeholder.com/800x600/50c878/ffffff?text=Campaign+Visual',
+                "description": f'{agent_input.business_name} campaign visual',
+                "alt_description": f'{agent_input.business_name} campaign visual',
+                "photographer": 'Stock Photos',
+                "photographer_url": 'https://placeholder.com',
+                "likes": 0,
+                "width": 800,
+                "height": 600
+            },
+            {
+                "id": "fallback_3",
+                "url": 'https://via.placeholder.com/800x600/e74c3c/ffffff?text=Brand+Image',
+                "description": f'{agent_input.business_name} brand representation',
+                "alt_description": f'{agent_input.business_name} brand representation',
+                "photographer": 'Stock Photos',
+                "photographer_url": 'https://placeholder.com',
+                "likes": 0,
+                "width": 800,
+                "height": 600
+            }
         ]
         
         self.logger.warning("Using fallback image suggestions")
@@ -347,15 +364,16 @@ class VisualDesignerAgent(BaseAgent):
         
         fallback_style = f"Professional {agent_input.industry} visual style with modern, clean aesthetics. Use corporate colors and maintain consistent branding across all platforms."
         
-        visual_result = VisualResult(
-            recommended_style=fallback_style,
-            image_suggestions=fallback_images,
-            color_palette=fallback_colors,
-            visual_themes=fallback_themes
-        )
+        # Create a dictionary directly instead of using VisualResult
+        visual_result = {
+            "recommended_style": fallback_style,
+            "image_suggestions": fallback_images,
+            "color_palette": fallback_colors,
+            "visual_themes": fallback_themes
+        }
         
         return {
-            'visuals': visual_result.dict(),
+            'visuals': visual_result,
             'metadata': {
                 'design_timestamp': datetime.utcnow().isoformat(),
                 'fallback_used': True,
