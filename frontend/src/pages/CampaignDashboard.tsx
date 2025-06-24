@@ -32,7 +32,6 @@ import {
   AlertCircle,
   Rocket,
   Brain,
-  Activity,
   Sparkles,
 } from "lucide-react";
 

@@ -15,22 +15,15 @@ import { Sparkles as SparklesComponent } from "@/components/ui/sparkles";
 import { useCampaignResults } from "@/hooks/useCampaign";
 import {
   ArrowLeft,
-  Hash,
-  Target,
-  Users,
-  DollarSign,
-  BarChart3,
   Instagram,
   Twitter,
   Facebook,
   Linkedin,
   Image as ImageIcon,
-  Calendar,
   Heart,
   Copy,
   Check,
-  Zap,
-  Star,
+  BarChart3,
 } from "lucide-react";
 
 const platformIcons = {
@@ -80,12 +73,6 @@ export function CampaignResults() {
     );
   }
 
-  const getViralProbabilityColor = (probability: string) => {
-    const value = parseInt(probability?.match(/\d+/)?.[0] || "0");
-    if (value >= 80) return "text-green-600";
-    if (value >= 60) return "text-yellow-600";
-    return "text-red-600";
-  };
   
   // Helper function to safely access nested properties
   const safelyGet = (obj: any, path: string, defaultValue: any = null) => {
@@ -392,7 +379,7 @@ export function CampaignResults() {
                                 className="w-full h-48 object-cover transition-all duration-200"
                                 loading="eager"
                                 decoding="async"
-                                fetchpriority="high"
+                                fetchPriority="high"
                                 onLoad={(e) => {
                                   e.currentTarget.style.opacity = '1';
                                   e.currentTarget.style.filter = 'blur(0px)';

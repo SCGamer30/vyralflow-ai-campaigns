@@ -44,7 +44,6 @@ import {
   Zap,
   Wand2,
   Brain,
-  Rocket,
 } from "lucide-react";
 
 const platforms = [
