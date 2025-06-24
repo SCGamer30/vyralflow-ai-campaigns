@@ -2,6 +2,12 @@
 
 Transform your marketing ideas into viral social media campaigns with the power of AI. VyralFlow uses 4 specialized AI agents to create comprehensive, platform-optimized campaigns that capture attention and drive engagement.
 
+## 🌐 Try VyralFlow AI Live
+
+**🚀 [Experience VyralFlow AI in Action](https://vyralflowai.shauryac.com)**
+
+See the platform in action and create your first viral campaign instantly!
+
 ## 🎯 What VyralFlow AI Does For You
 
 ### Generate Complete Campaigns in Minutes
