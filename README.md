@@ -30,11 +30,11 @@ Simply tell us about your business and campaign goals, and our AI agents will:
 
 ## 💡 How It Works
 
-### 1. Tell Us About Your Campaign
+### Tell Us About Your Campaign
 
 Share your business name, industry, and what you want to achieve. Our intuitive form makes it easy to provide the right information.
 
-### 2. Watch AI Agents Work Their Magic
+### Watch AI Agents Work Their Magic
 
 Four specialized AI agents collaborate to build your campaign:
 
@@ -43,11 +43,11 @@ Four specialized AI agents collaborate to build your campaign:
 - **Visual Designer** selects stunning images that tell your story
 - **Campaign Scheduler** optimizes timing for maximum impact
 
-### 3. Get Your Complete Campaign Package
+### Get Your Complete Campaign Package
 
 Receive everything you need to go viral:
 
-- Platform-specific content for Instagram, TikTok, Facebook, LinkedIn, and Twitter
+- Platform-specific content for Instagram, Facebook, LinkedIn, and Twitter
 - Professionally curated images with proper attribution
 - Optimal posting schedule based on your audience
 - Performance predictions and engagement metrics
@@ -56,29 +56,29 @@ Receive everything you need to go viral:
 
 ### Quick Start
 
-1. **Download or Clone VyralFlow AI**
-   ```bash
-   git clone https://github.com/your-username/vyralflow-ai-campaigns.git
-   cd vyralflow-ai-campaigns
-   ```
+**Download or Clone VyralFlow AI**
+```bash
+git clone https://github.com/your-username/vyralflow-ai-campaigns.git
+cd vyralflow-ai-campaigns
+```
 
-2. **Start VyralFlow AI (Choose One Option)**
+**Start VyralFlow AI (Choose One Option)**
 
-   **Option A: One-Click Start (Recommended)**
-   - **Windows**: Double-click `start.bat`
-   - **Mac/Linux**: Run `./start.sh` in terminal
+**Option A: One-Click Start (Recommended)**
+- **Windows**: Double-click `start.bat`
+- **Mac/Linux**: Run `./start.sh` in terminal
 
-   **Option B: Manual Start**
-   ```bash
-   # Start the application
-   python start.py
-   ```
+**Option B: Manual Start**
+```bash
+# Start the application
+python start.py
+```
 
-3. **Open Your Browser**
-   Navigate to the URL shown in your terminal (usually `http://localhost:5173`)
+**Open Your Browser**
+Navigate to the URL shown in your terminal (usually `http://localhost:5173`)
 
-4. **Create Your First Campaign**
-   Click "Create Your Viral Campaign" and start generating!
+**Create Your First Campaign**
+Click "Create Your Viral Campaign" and start generating!
 
 ## 📊 What You'll Get
 
@@ -121,7 +121,7 @@ Receive everything you need to go viral:
 **Goal**: Promote summer collection with exclusive offers
 - **Result**: 85% viral probability
 - **Reach**: 100K-200K fashion enthusiasts
-- **Content**: Trendy Instagram reels, TikTok challenges, Facebook shop features
+- **Content**: Trendy Instagram reels, engaging Facebook posts, LinkedIn professional updates
 - **Visuals**: Curated lifestyle and product images
 
 ### Local Restaurant Special
@@ -160,7 +160,7 @@ A: Most campaigns are ready in 2-5 minutes. You can watch the progress in real-t
 A: Absolutely! All content is fully editable. Use our suggestions as a starting point and make them your own.
 
 **Q: What platforms are supported?**
-A: Instagram, TikTok, Facebook, LinkedIn, and Twitter - with platform-specific optimization for each.
+A: Instagram, Facebook, LinkedIn, and Twitter - with platform-specific optimization for each.
 
 **Q: Is my business information secure?**
 A: Yes, all data is processed securely and never shared. Campaigns are private to your account.
@@ -183,10 +183,10 @@ A: Not at all! VyralFlow AI is designed to be user-friendly. Just run the start 
 
 Ready to transform your social media presence? VyralFlow AI is here to help you create campaigns that capture attention, drive engagement, and deliver results.
 
-**Get started in 3 simple steps:**
-1. Download VyralFlow AI
-2. Run the start script
-3. Create your first viral campaign
+**Get started in simple steps:**
+- Download VyralFlow AI
+- Run the start script
+- Create your first viral campaign
 
 ---
 

@@ -123,9 +123,13 @@ dmypy.json
 .pyre/
 
 # Google Cloud credentials
-*.json
 service-account-*.json
 credentials.json
+google-service-account.json
+
+# Allow package.json files
+!package.json
+!package-lock.json
 
 # IDE files
 .vscode/
