@@ -14,7 +14,10 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+# Python lib/ directories but not frontend/src/lib/
+vyralflow-env/lib/
+*/lib/python*/
+*/lib64/
 lib64/
 parts/
 sdist/
