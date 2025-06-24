@@ -1,11 +1,12 @@
 [build]
   base = "frontend"
-  command = "npm ci && npm run build"
+  command = "npm ci --prefer-offline --no-audit && npm run build"
   publish = "dist"
 
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "20.11.0"
   NPM_FLAGS = "--production=false"
+  CI = "true"
 
 # Environment variables
 [context.production.environment]
