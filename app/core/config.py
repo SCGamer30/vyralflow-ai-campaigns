@@ -2,6 +2,8 @@ from pydantic import Field
 from pydantic_settings import BaseSettings
 from typing import Optional
 import os
+import json
+import tempfile
 from pathlib import Path
 
 
@@ -18,10 +20,10 @@ class Settings(BaseSettings):
     debug: bool = Field(default=False, env="DEBUG")
     version: str = "1.0.0"
     
-    # Google Cloud Configuration
+    # Google Cloud Configuration  
     google_cloud_project: str = Field(..., env="GOOGLE_CLOUD_PROJECT")
     google_application_credentials: Optional[str] = Field(
-        default=None, env="GOOGLE_APPLICATION_CREDENTIALS"
+        default=None, env="GOOGLE_APPLICATION_CREDENTIALS", description="Path to credentials file or JSON content"
     )
     
     # AI APIs
@@ -59,11 +61,24 @@ class Settings(BaseSettings):
     def _setup_google_credentials(self):
         """Set up Google Cloud credentials."""
         if self.google_application_credentials:
-            credentials_path = Path(self.google_application_credentials)
-            if credentials_path.exists():
-                os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(credentials_path.absolute())
+            # Check if it's a JSON string (starts with {) or a file path
+            if self.google_application_credentials.strip().startswith('{'):
+                # It's JSON content, create a temporary file
+                try:
+                    credentials_dict = json.loads(self.google_application_credentials)
+                    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+                        json.dump(credentials_dict, f)
+                        os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = f.name
+                        print(f"Google credentials loaded from environment variable")
+                except json.JSONDecodeError as e:
+                    print(f"Error parsing Google credentials JSON: {e}")
             else:
-                print(f"Warning: Google credentials file not found: {credentials_path}")
+                # It's a file path
+                credentials_path = Path(self.google_application_credentials)
+                if credentials_path.exists():
+                    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = str(credentials_path.absolute())
+                else:
+                    print(f"Warning: Google credentials file not found: {credentials_path}")
         
     def validate_required_keys(self) -> list:
         """Validate that required API keys are present."""
