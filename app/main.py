@@ -10,6 +10,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.core.database import db_manager
 from app.core.exceptions import VyralflowException
+from app.core.google_auth import setup_google_auth
 from app.api.routes import campaigns, health, agents
 from app.utils.logging import setup_logging, get_logger
 from app.services.unsplash_service import unsplash_service
@@ -29,6 +30,9 @@ async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.app_name} v{settings.version}")
     
     try:
+        # Set up Google authentication
+        setup_google_auth()
+        
         # Validate API keys
         missing_keys = settings.validate_required_keys()
         if missing_keys:
