@@ -8,6 +8,11 @@ from pathlib import Path
 class Settings(BaseSettings):
     """Application settings with environment variable support."""
     
+    model_config = {
+        "env_file": ".env",
+        "case_sensitive": False
+    }
+    
     # App Configuration
     app_name: str = Field(default="Vyralflow AI", env="APP_NAME")
     debug: bool = Field(default=False, env="DEBUG")
@@ -46,10 +51,6 @@ class Settings(BaseSettings):
     
     # External API Timeouts
     external_api_timeout: int = 30
-    
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
         
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
