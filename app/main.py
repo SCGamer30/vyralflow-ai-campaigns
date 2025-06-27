@@ -210,7 +210,7 @@ app.add_middleware(
 if not settings.debug:
     app.add_middleware(
         TrustedHostMiddleware,
-        allowed_hosts=["*.vyralflow.ai", "localhost", "127.0.0.1"]
+        allowed_hosts=["*.vyralflow.ai", "localhost", "127.0.0.1", "*.onrender.com"]
     )
 
 
