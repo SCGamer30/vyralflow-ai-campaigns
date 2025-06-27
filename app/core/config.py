@@ -1,5 +1,4 @@
-from pydantic import Field
-from pydantic_settings import BaseSettings
+from pydantic import BaseSettings, Field
 from typing import Optional
 import os
 from pathlib import Path

@@ -2,7 +2,7 @@ services:
   - type: web
     name: vyralflow-backend
     runtime: python
-    buildCommand: pip install --prefer-binary --no-cache-dir -r requirements.txt
+    buildCommand: ./build.sh
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: GOOGLE_CLOUD_PROJECT
@@ -11,7 +11,7 @@ services:
         sync: false
       - key: UNSPLASH_ACCESS_KEY
         sync: false
-      - key: GOOGLE_APPLICATION_CREDENTIALS
+      - key: GOOGLE_SERVICE_ACCOUNT_JSON
         sync: false
       - key: REDDIT_CLIENT_ID
         sync: false
