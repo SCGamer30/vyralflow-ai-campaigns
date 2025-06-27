@@ -80,7 +80,7 @@ class CampaignOrchestrator:
                 'target_audience': campaign_request.target_audience,
                 'keywords': campaign_request.keywords,
                 'status': CampaignStatus.PROCESSING.value,
-                'agent_progress': [progress.dict() for progress in agent_progress],
+                'agent_progress': [progress.model_dump() for progress in agent_progress],
                 'created_at': datetime.now(timezone.utc),
                 'results': None
             }
@@ -231,7 +231,7 @@ class CampaignOrchestrator:
             # Update campaign in database
             updates = {
                 'status': CampaignStatus.COMPLETED.value,
-                'results': campaign_results.dict(),
+                'results': campaign_results.model_dump(),
                 'completed_at': datetime.now(timezone.utc)
             }
             

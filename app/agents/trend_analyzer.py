@@ -282,7 +282,7 @@ class TrendAnalyzerAgent(BaseAgent):
             )
             
             return {
-                'trends': trend_result.dict(),
+                'trends': trend_result.model_dump(),
                 'raw_data': {
                     'google_trends': combined_data.get('google_trends_data', {}),
                     'reddit_data': combined_data.get('reddit_data', {})
@@ -415,7 +415,7 @@ class TrendAnalyzerAgent(BaseAgent):
         )
         
         return {
-            'trends': trend_result.dict(),
+            'trends': trend_result.model_dump(),
             'raw_data': {
                 'fallback_used': True,
                 'reason': 'Primary trend analysis sources unavailable'

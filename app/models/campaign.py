@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from typing import List, Optional, Dict, Any
 from datetime import datetime
 from enum import Enum
@@ -78,13 +78,15 @@ class CampaignRequest(BaseModel):
         description="Relevant keywords for the campaign"
     )
     
-    @validator('keywords')
+    @field_validator('keywords')
+    @classmethod
     def validate_keywords(cls, v):
         if v and len(v) > 20:
             raise ValueError("Maximum 20 keywords allowed")
         return v
     
-    @validator('target_platforms')
+    @field_validator('target_platforms')
+    @classmethod
     def validate_platforms(cls, v):
         if len(v) > 5:
             raise ValueError("Maximum 5 platforms allowed")

@@ -67,7 +67,7 @@ class ContentWriterAgent(BaseAgent):
             
             self.logger.info("Content generation completed successfully")
             return {
-                'content': content_result.dict(),
+                'content': content_result.model_dump(),
                 'metadata': {
                     'generation_timestamp': datetime.now(timezone.utc).isoformat(),
                     'platforms_generated': len(platform_contents),
@@ -382,7 +382,7 @@ class ContentWriterAgent(BaseAgent):
         content_result = await self._create_content_result(platform_contents)
         
         return {
-            'content': content_result.dict(),
+            'content': content_result.model_dump(),
             'metadata': {
                 'generation_timestamp': datetime.now(timezone.utc).isoformat(),
                 'platforms_generated': len(platform_contents),

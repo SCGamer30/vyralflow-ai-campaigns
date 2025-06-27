@@ -89,7 +89,7 @@ class CampaignSchedulerAgent(BaseAgent):
             
             self.logger.info("Campaign scheduling completed successfully")
             return {
-                'schedule': schedule_result.dict(),
+                'schedule': schedule_result.model_dump(),
                 'metadata': {
                     'scheduling_timestamp': datetime.now(timezone.utc).isoformat(),
                     'platforms_scheduled': len(agent_input.target_platforms),
@@ -489,7 +489,7 @@ class CampaignSchedulerAgent(BaseAgent):
         schedule_result.posting_sequence = fallback_sequence
         
         return {
-            'schedule': schedule_result.dict(),
+            'schedule': schedule_result.model_dump(),
             'metadata': {
                 'scheduling_timestamp': datetime.now(timezone.utc).isoformat(),
                 'fallback_used': True,
