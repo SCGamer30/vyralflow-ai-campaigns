@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>React Test</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+</head>
+<body>
+    <div id="test-root"></div>
+    <script>
+        const e = React.createElement;
+        ReactDOM.render(
+            e('h1', null, 'React is working!'),
+            document.getElementById('test-root')
+        );
+    </script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import asyncio
 import uuid
 
@@ -13,7 +13,7 @@ from app.agents.trend_analyzer import trend_analyzer_agent
 from app.agents.content_writer import content_writer_agent
 from app.agents.visual_designer import visual_designer_agent
 from app.agents.campaign_scheduler import campaign_scheduler_agent
-from app.services.firestore_service import firestore_service
+from app.core.demo_database import demo_db
 from app.core.exceptions import AgentExecutionException, CampaignNotFoundException
 from app.utils.logging import get_logger
 from app.utils.helpers import generate_campaign_id
@@ -81,11 +81,11 @@ class CampaignOrchestrator:
                 'keywords': campaign_request.keywords,
                 'status': CampaignStatus.PROCESSING.value,
                 'agent_progress': [progress.dict() for progress in agent_progress],
-                'created_at': datetime.utcnow(),
+                'created_at': datetime.now(timezone.utc),
                 'results': None
             }
             
-            await firestore_service.create_campaign(campaign_data)
+            await demo_db.create_campaign(campaign_data)
             
             # Add to active campaigns
             self.active_campaigns[campaign_id] = {
@@ -93,7 +93,7 @@ class CampaignOrchestrator:
                 'status': CampaignStatus.PROCESSING,
                 'current_agent_index': 0,
                 'results': {},
-                'started_at': datetime.utcnow()
+                'started_at': datetime.now(timezone.utc)
             }
             
             # Start campaign execution asynchronously
@@ -104,7 +104,7 @@ class CampaignOrchestrator:
                 campaign_id=campaign_id,
                 status=CampaignStatus.PROCESSING,
                 agent_progress=agent_progress,
-                created_at=datetime.utcnow()
+                created_at=datetime.now(timezone.utc)
             )
             
             self.logger.info(f"Campaign {campaign_id} created and started")
@@ -148,8 +148,22 @@ class CampaignOrchestrator:
                     previous_results=agent_results
                 )
                 
-                # Execute agent
-                agent_output = await agent_instance.execute(agent_input)
+                # Execute agent with timeout to prevent hanging
+                try:
+                    agent_output = await asyncio.wait_for(
+                        agent_instance.execute(agent_input),
+                        timeout=300  # 5 minutes max per agent
+                    )
+                except asyncio.TimeoutError:
+                    error_msg = f"Agent {agent_type.value} timed out after 5 minutes"
+                    self.logger.error(error_msg)
+                    await self._update_campaign_status(campaign_id, CampaignStatus.FAILED, error_msg)
+                    return
+                except Exception as agent_error:
+                    error_msg = f"Agent {agent_type.value} execution failed: {agent_error}"
+                    self.logger.error(error_msg)
+                    await self._update_campaign_status(campaign_id, CampaignStatus.FAILED, error_msg)
+                    return
                 
                 # Store results
                 if agent_output.status.value == 'completed' and agent_output.results:
@@ -218,10 +232,10 @@ class CampaignOrchestrator:
             updates = {
                 'status': CampaignStatus.COMPLETED.value,
                 'results': campaign_results.dict(),
-                'completed_at': datetime.utcnow()
+                'completed_at': datetime.now(timezone.utc)
             }
             
-            await firestore_service.update_campaign(campaign_id, updates)
+            await demo_db.update_campaign(campaign_id, updates)
             
             self.logger.info(f"Campaign {campaign_id} completed successfully")
             
@@ -248,12 +262,12 @@ class CampaignOrchestrator:
             updates = {'status': status.value}
             
             if status == CampaignStatus.COMPLETED:
-                updates['completed_at'] = datetime.utcnow()
+                updates['completed_at'] = datetime.now(timezone.utc)
             elif status == CampaignStatus.FAILED:
                 updates['error_message'] = error_message
-                updates['completed_at'] = datetime.utcnow()
+                updates['completed_at'] = datetime.now(timezone.utc)
             
-            await firestore_service.update_campaign(campaign_id, updates)
+            await demo_db.update_campaign(campaign_id, updates)
             
             # Update active campaigns if present
             if campaign_id in self.active_campaigns:
@@ -274,7 +288,7 @@ class CampaignOrchestrator:
         """
         try:
             # Get campaign from database
-            campaign_data = await firestore_service.get_campaign(campaign_id)
+            campaign_data = await demo_db.get_campaign(campaign_id)
             
             if not campaign_data:
                 raise CampaignNotFoundException(campaign_id)
@@ -317,7 +331,7 @@ class CampaignOrchestrator:
             CampaignResults: Complete campaign results
         """
         try:
-            campaign_data = await firestore_service.get_campaign(campaign_id)
+            campaign_data = await demo_db.get_campaign(campaign_id)
             
             if not campaign_data:
                 raise CampaignNotFoundException(campaign_id)
@@ -360,7 +374,7 @@ class CampaignOrchestrator:
         """
         try:
             status_filter = status.value if status else None
-            campaigns_data = await firestore_service.list_campaigns(
+            campaigns_data = await demo_db.list_campaigns(
                 limit=limit,
                 offset=offset,
                 status=status_filter
@@ -505,7 +519,7 @@ class CampaignOrchestrator:
                 'orchestrator': 'healthy',
                 'active_campaigns': len(self.active_campaigns),
                 'agents': {},
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
             
             # Check each agent health
@@ -526,7 +540,7 @@ class CampaignOrchestrator:
             return {
                 'orchestrator': 'unhealthy',
                 'error': str(e),
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
 
 

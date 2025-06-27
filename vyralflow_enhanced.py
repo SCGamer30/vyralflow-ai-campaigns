@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 import uvicorn
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 import asyncio
 from app.services.enhanced_services import (
     unsplash_service, 
@@ -128,7 +128,7 @@ async def root():
 async def health_check():
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "version": "2.0.0",
         "services": {
             "api": "healthy",
@@ -170,7 +170,7 @@ async def create_campaign(request: CampaignRequest, background_tasks: Background
             {"agent_name": "visual_designer", "status": "pending", "progress_percentage": 0, "message": "Connecting to Unsplash API..."},
             {"agent_name": "campaign_scheduler", "status": "pending", "progress_percentage": 0, "message": "Analyzing engagement patterns..."}
         ],
-        "created_at": datetime.utcnow().isoformat(),
+        "created_at": datetime.now(timezone.utc).isoformat(),
         "enhanced_features": {
             "real_apis": True,
             "ai_generated": True,
@@ -233,7 +233,7 @@ async def get_agents_status():
             "description": "Analyzes live trending topics using Google Trends API",
             "api_integration": "Google Trends",
             "capabilities": ["Live trend detection", "Industry analysis", "Hashtag generation"],
-            "last_updated": datetime.utcnow().isoformat()
+            "last_updated": datetime.now(timezone.utc).isoformat()
         },
         {
             "agent_name": "content_writer", 
@@ -241,7 +241,7 @@ async def get_agents_status():
             "description": "Generates viral content using Google Gemini AI",
             "api_integration": "Google Gemini",
             "capabilities": ["AI content generation", "Platform optimization", "Viral mechanics"],
-            "last_updated": datetime.utcnow().isoformat()
+            "last_updated": datetime.now(timezone.utc).isoformat()
         },
         {
             "agent_name": "visual_designer",
@@ -249,7 +249,7 @@ async def get_agents_status():
             "description": "Suggests real photos and visual concepts via Unsplash API",
             "api_integration": "Unsplash API", 
             "capabilities": ["Real photo suggestions", "Color analysis", "Visual concepts"],
-            "last_updated": datetime.utcnow().isoformat()
+            "last_updated": datetime.now(timezone.utc).isoformat()
         },
         {
             "agent_name": "campaign_scheduler",
@@ -257,7 +257,7 @@ async def get_agents_status():
             "description": "Optimizes posting schedule using advanced engagement analytics",
             "api_integration": "Internal Analytics Engine",
             "capabilities": ["Engagement prediction", "Optimal timing", "Platform insights"],
-            "last_updated": datetime.utcnow().isoformat()
+            "last_updated": datetime.now(timezone.utc).isoformat()
         }
     ]
 
@@ -289,7 +289,7 @@ async def force_complete_campaign(campaign_id: str):
         # Update campaign with completed status and comprehensive sample results
         campaign.update({
             'status': 'completed',
-            'completed_at': datetime.utcnow().isoformat(),
+            'completed_at': datetime.now(timezone.utc).isoformat(),
             'processing_time': '5.0 seconds (force completed)',
             'agent_progress': [
                 {
@@ -297,7 +297,7 @@ async def force_complete_campaign(campaign_id: str):
                     "status": "completed", 
                     "progress_percentage": 100,
                     "message": "Live trends analyzed successfully",
-                    "completed_at": datetime.utcnow().isoformat(),
+                    "completed_at": datetime.now(timezone.utc).isoformat(),
                     "ai_generated": True
                 },
                 {
@@ -305,7 +305,7 @@ async def force_complete_campaign(campaign_id: str):
                     "status": "completed",
                     "progress_percentage": 100, 
                     "message": "AI content generated successfully (force completed)",
-                    "completed_at": datetime.utcnow().isoformat(),
+                    "completed_at": datetime.now(timezone.utc).isoformat(),
                     "ai_generated": True
                 },
                 {
@@ -313,7 +313,7 @@ async def force_complete_campaign(campaign_id: str):
                     "status": "completed",
                     "progress_percentage": 100,
                     "message": "Visual assets curated successfully", 
-                    "completed_at": datetime.utcnow().isoformat(),
+                    "completed_at": datetime.now(timezone.utc).isoformat(),
                     "ai_generated": True
                 },
                 {
@@ -321,7 +321,7 @@ async def force_complete_campaign(campaign_id: str):
                     "status": "completed",
                     "progress_percentage": 100,
                     "message": "Schedule optimized successfully",
-                    "completed_at": datetime.utcnow().isoformat(),
+                    "completed_at": datetime.now(timezone.utc).isoformat(),
                     "ai_generated": True
                 }
             ],
@@ -424,7 +424,7 @@ async def process_enhanced_campaign(campaign_id: str, request: CampaignRequest):
         if not campaign:
             return
         
-        start_time = datetime.utcnow()
+        start_time = datetime.now(timezone.utc)
         
         # Agent 1: Trend Analyzer with Google Trends
         await update_agent_status(campaign_id, "trend_analyzer", "running", 0, "Analyzing live trends...")
@@ -514,7 +514,7 @@ async def process_enhanced_campaign(campaign_id: str, request: CampaignRequest):
         await update_agent_status(campaign_id, "campaign_scheduler", "completed", 100, "Schedule optimized successfully", ai_generated=True)
         
         # Compile final results
-        processing_time = (datetime.utcnow() - start_time).total_seconds()
+        processing_time = (datetime.now(timezone.utc) - start_time).total_seconds()
         
         final_results = {
             "campaign_id": campaign_id,
@@ -558,7 +558,7 @@ async def process_enhanced_campaign(campaign_id: str, request: CampaignRequest):
         
         # Update campaign with final results
         campaign.update(final_results)
-        campaign["completed_at"] = datetime.utcnow().isoformat()
+        campaign["completed_at"] = datetime.now(timezone.utc).isoformat()
         storage.store_campaign(campaign_id, campaign)
         storage.finish_processing(campaign_id)
         
@@ -694,9 +694,9 @@ async def update_agent_status(
             agent["ai_generated"] = ai_generated
             
             if status == "running" and not agent.get("started_at"):
-                agent["started_at"] = datetime.utcnow().isoformat()
+                agent["started_at"] = datetime.now(timezone.utc).isoformat()
             elif status == "completed":
-                agent["completed_at"] = datetime.utcnow().isoformat()
+                agent["completed_at"] = datetime.now(timezone.utc).isoformat()
             break
     
     storage.store_campaign(campaign_id, campaign)
@@ -727,7 +727,8 @@ if __name__ == "__main__":
     
     uvicorn.run(
         app,
-        host="127.0.0.1",
+        host="localhost",
         port=8080,
-        log_level="info"
+        log_level="info",
+        reload=True
     )

@@ -1,5 +1,5 @@
 from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timezone, timedelta
 import random
 
 from app.agents.base_agent import BaseAgent
@@ -91,7 +91,7 @@ class CampaignSchedulerAgent(BaseAgent):
             return {
                 'schedule': schedule_result.dict(),
                 'metadata': {
-                    'scheduling_timestamp': datetime.utcnow().isoformat(),
+                    'scheduling_timestamp': datetime.now(timezone.utc).isoformat(),
                     'platforms_scheduled': len(agent_input.target_platforms),
                     'posting_events_created': len(posting_sequence),
                     'optimization_factors': audience_analysis.get('factors_considered', []),
@@ -491,7 +491,7 @@ class CampaignSchedulerAgent(BaseAgent):
         return {
             'schedule': schedule_result.dict(),
             'metadata': {
-                'scheduling_timestamp': datetime.utcnow().isoformat(),
+                'scheduling_timestamp': datetime.now(timezone.utc).isoformat(),
                 'fallback_used': True,
                 'reason': 'Primary scheduling process failed',
                 'agent_version': '1.0.0'

@@ -130,41 +130,139 @@ class UnsplashService:
         """Generate search queries for photo suggestions."""
         queries = []
         
-        # Industry-based queries
-        industry_keywords = {
-            'food & beverage': ['food photography', 'restaurant', 'coffee', 'dining', 'culinary'],
-            'technology': ['technology', 'digital', 'modern office', 'innovation', 'computer'],
-            'retail': ['shopping', 'fashion', 'store', 'products', 'retail'],
-            'healthcare': ['healthcare', 'medical', 'wellness', 'fitness', 'health'],
-            'finance': ['business', 'finance', 'professional', 'office', 'money'],
-            'education': ['education', 'learning', 'books', 'classroom', 'study'],
-            'real estate': ['real estate', 'home', 'property', 'architecture', 'house'],
-            'automotive': ['automotive', 'cars', 'transportation', 'vehicles', 'driving']
+        # Dynamic industry-based queries for variety
+        import random
+        import time
+        
+        # Create unique seed for different results each time
+        seed = hash(f"{business_name}_{campaign_goal}_{int(time.time() / 3600)}")
+        random.seed(seed)
+        
+        industry_keyword_options = {
+            'food & beverage': [
+                ['coffee beans', 'espresso cup', 'cafe interior', 'coffee brewing'],
+                ['fresh coffee', 'coffee shop', 'barista', 'coffee roasting'],
+                ['coffee mug', 'latte art', 'coffee culture', 'artisan coffee'],
+                ['organic coffee', 'coffee plantation', 'coffee grinder', 'specialty coffee']
+            ],
+            'technology': [
+                ['modern office', 'tech startup', 'computer setup', 'digital workspace'],
+                ['laptop coding', 'software development', 'tech innovation', 'programmer'],
+                ['tech meeting', 'digital transformation', 'modern technology', 'innovation hub']
+            ],
+            'retail': [
+                ['modern store', 'shopping experience', 'retail display', 'boutique interior'],
+                ['product showcase', 'customer shopping', 'retail business', 'store front'],
+                ['brand display', 'shopping lifestyle', 'retail design', 'commerce']
+            ],
+            'healthcare': [
+                ['healthcare', 'medical', 'wellness', 'health professional'],
+                ['clinic', 'fitness', 'health', 'medical technology'],
+                ['wellness center', 'care', 'treatment', 'healthy lifestyle']
+            ],
+            'finance': [
+                ['finance', 'business', 'investment', 'financial'],
+                ['banking', 'money', 'professional', 'wealth'],
+                ['financial planning', 'growth', 'success', 'advisor']
+            ],
+            'education': [
+                ['education', 'learning', 'student', 'academic'],
+                ['classroom', 'books', 'study', 'knowledge'],
+                ['online learning', 'teaching', 'school', 'educational']
+            ],
+            'real estate': [
+                ['real estate', 'property', 'home', 'house'],
+                ['architecture', 'building', 'residential', 'commercial'],
+                ['luxury', 'modern home', 'interior', 'design']
+            ],
+            'automotive': [
+                ['automotive', 'cars', 'vehicles', 'transportation'],
+                ['driving', 'auto', 'car dealership', 'modern car'],
+                ['electric vehicle', 'innovation', 'automotive design', 'performance']
+            ]
         }
         
-        industry_terms = industry_keywords.get(industry.lower(), [industry])
-        queries.extend(industry_terms[:2])
+        # Create business-specific queries first
+        business_type_keywords = []
+        business_lower = business_name.lower()
         
-        # Campaign goal-based queries
-        if 'promote' in campaign_goal.lower() or 'launch' in campaign_goal.lower():
-            queries.append('marketing promotion')
-        elif 'sale' in campaign_goal.lower() or 'discount' in campaign_goal.lower():
-            queries.append('sale discount shopping')
-        elif 'awareness' in campaign_goal.lower():
-            queries.append('brand awareness business')
+        # Detect business type from name for more targeted searches
+        if any(word in business_lower for word in ['cafe', 'coffee', 'espresso', 'brew']):
+            business_type_keywords = ['coffee shop interior', 'coffee beans close up', 'espresso machine']
+        elif any(word in business_lower for word in ['restaurant', 'bistro', 'eatery']):
+            business_type_keywords = ['restaurant interior', 'food plating', 'dining experience']
+        elif any(word in business_lower for word in ['bakery', 'pastry', 'bread']):
+            business_type_keywords = ['fresh bread', 'bakery interior', 'artisan pastry']
+        elif any(word in business_lower for word in ['tech', 'software', 'app', 'digital']):
+            business_type_keywords = ['modern office space', 'tech workspace', 'software development']
+        elif any(word in business_lower for word in ['boutique', 'fashion', 'style']):
+            business_type_keywords = ['boutique interior', 'fashion display', 'clothing store']
+        
+        # Add business-specific queries if detected
+        if business_type_keywords:
+            queries.extend(business_type_keywords[:2])
+        
+        # Select random keyword sets for variety
+        industry_options = industry_keyword_options.get(industry.lower(), [['business', 'professional']])
+        selected_option = random.choice(industry_options)
+        queries.extend(selected_option[:2])
+        
+        # Dynamic campaign goal-based queries
+        goal_keywords = {
+            'promote': ['marketing', 'promotion', 'advertising', 'brand visibility'],
+            'launch': ['product launch', 'new business', 'startup', 'innovation'],
+            'sale': ['sale', 'discount', 'shopping', 'special offer'],
+            'awareness': ['brand awareness', 'visibility', 'recognition', 'outreach'],
+            'growth': ['business growth', 'expansion', 'success', 'development'],
+            'engagement': ['community', 'social media', 'interaction', 'connection']
+        }
+        
+        # Find matching goal keywords
+        goal_matches = []
+        for key, keywords in goal_keywords.items():
+            if key in campaign_goal.lower():
+                goal_matches.extend(keywords)
+        
+        if goal_matches:
+            queries.append(random.choice(goal_matches))
         else:
-            queries.append('business success')
+            queries.append(random.choice(['business success', 'professional growth', 'innovation']))
         
-        # Visual theme queries
+        # Enhanced visual theme queries
         if visual_themes:
+            theme_variations = {
+                'modern': ['modern', 'contemporary', 'sleek', 'minimalist'],
+                'professional': ['professional', 'corporate', 'business', 'formal'],
+                'creative': ['creative', 'artistic', 'innovative', 'unique'],
+                'energetic': ['energetic', 'dynamic', 'vibrant', 'active'],
+                'warm': ['warm', 'cozy', 'friendly', 'welcoming'],
+                'luxurious': ['luxury', 'premium', 'elegant', 'sophisticated']
+            }
+            
             for theme in visual_themes[:2]:
-                if theme.lower() not in [q.lower() for q in queries]:
+                theme_key = theme.lower()
+                if theme_key in theme_variations:
+                    selected_variation = random.choice(theme_variations[theme_key])
+                    if selected_variation.lower() not in [q.lower() for q in queries]:
+                        queries.append(selected_variation)
+                elif theme.lower() not in [q.lower() for q in queries]:
                     queries.append(theme)
         
-        # General business queries
-        queries.extend(['professional business', 'modern workspace', 'team collaboration'])
+        # Dynamic general business queries
+        general_options = [
+            ['professional business', 'corporate success', 'business meeting'],
+            ['modern workspace', 'office environment', 'workplace'],
+            ['team collaboration', 'teamwork', 'business team'],
+            ['success', 'achievement', 'growth'],
+            ['innovation', 'future', 'progress']
+        ]
         
-        return queries[:6]  # Limit to 6 queries
+        selected_general = random.choice(general_options)
+        queries.extend(selected_general[:1])  # Add one general query
+        
+        # Ensure we have enough unique queries
+        unique_queries = list(dict.fromkeys(queries))  # Remove duplicates while preserving order
+        return unique_queries[:6]  # Limit to 6 queries
     
     def _deduplicate_photos(self, photos: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """Remove duplicate photos."""
@@ -188,35 +286,61 @@ class UnsplashService:
         for photo in photos:
             score = 0
             
-            # Likes score (normalized)
+            # Quality and popularity score
             likes = photo.get('likes', 0)
-            if likes > 1000:
+            if likes > 5000:
+                score += 5  # Very popular
+            elif likes > 1000:
+                score += 4
+            elif likes > 500:
                 score += 3
             elif likes > 100:
                 score += 2
             elif likes > 10:
                 score += 1
             
-            # Description relevance
+            # Description and tags relevance (enhanced scoring)
             description = (photo.get('description') or '').lower()
+            alt_description = (photo.get('alt_description') or '').lower()
             tags = [tag.lower() for tag in photo.get('tags', [])]
             
+            # Combined text for searching
+            combined_text = f"{description} {alt_description} {' '.join(tags)}"
+            
+            # Higher scoring for exact query matches
             for query in search_queries:
-                query_words = query.lower().split()
-                for word in query_words:
-                    if word in description:
-                        score += 2
-                    if any(word in tag for tag in tags):
-                        score += 1
+                query_lower = query.lower()
+                if query_lower in combined_text:
+                    score += 5  # Exact query match
+                
+                query_words = query_lower.split()
+                word_matches = sum(1 for word in query_words if word in combined_text)
+                score += word_matches * 2  # Points per word match
+            
+            # Bonus for industry-specific terms
+            business_terms = ['business', 'professional', 'modern', 'quality', 'premium', 'artisan', 'craft']
+            food_terms = ['coffee', 'cafe', 'espresso', 'beans', 'brewing', 'barista', 'latte', 'cappuccino']
+            
+            if any(term in combined_text for term in business_terms):
+                score += 2
+            if any(term in combined_text for term in food_terms):
+                score += 3  # Extra bonus for food-related terms
             
             # Quality indicators
             if photo.get('urls', {}).get('full'):
                 score += 1
+            if photo.get('width', 0) >= 1920:  # High resolution
+                score += 2
             
-            photo['relevance_score'] = score
+            # Penalize generic/irrelevant terms
+            generic_terms = ['person holding', 'hand writing', 'whiteboard', 'meeting room', 'office worker']
+            if any(term in combined_text for term in generic_terms):
+                score -= 3
+            
+            photo['relevance_score'] = max(score, 0)  # Don't go below 0
         
-        # Sort by score
-        return sorted(photos, key=lambda x: x.get('relevance_score', 0), reverse=True)
+        # Sort by score, then by likes as tiebreaker
+        return sorted(photos, key=lambda x: (x.get('relevance_score', 0), x.get('likes', 0)), reverse=True)
     
     async def get_curated_photos(self, per_page: int = 10) -> List[Dict[str, Any]]:
         """Get curated photos from Unsplash."""

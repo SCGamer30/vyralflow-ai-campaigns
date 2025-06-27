@@ -1,13 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Dict, Any, Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 import asyncio
 import traceback
 import uuid
 
 from app.models.agent import AgentType, AgentInput, AgentOutput, AgentExecutionStatus
 from app.models.campaign import AgentProgress, AgentStatus
-from app.services.firestore_service import firestore_service
+from app.core.database import db_manager
 from app.utils.logging import get_logger
 from app.utils.helpers import calculate_progress_percentage
 
@@ -55,7 +55,7 @@ class BaseAgent(ABC):
         """
         self.execution_id = str(uuid.uuid4())
         self.current_campaign_id = agent_input.campaign_id
-        self.execution_start_time = datetime.utcnow()
+        self.execution_start_time = datetime.now(timezone.utc)
         
         self.logger.info(f"Starting execution for campaign {agent_input.campaign_id}")
         
@@ -72,7 +72,7 @@ class BaseAgent(ABC):
             # Update final status
             await self._update_progress(AgentStatus.COMPLETED, 100, "Execution completed successfully")
             
-            execution_time = (datetime.utcnow() - self.execution_start_time).total_seconds()
+            execution_time = (datetime.now(timezone.utc) - self.execution_start_time).total_seconds()
             
             output = AgentOutput(
                 agent_type=self.agent_type,
@@ -80,7 +80,7 @@ class BaseAgent(ABC):
                 status=AgentExecutionStatus.COMPLETED,
                 results=result,
                 execution_time_seconds=execution_time,
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(timezone.utc)
             )
             
             self.logger.info(f"Completed execution for campaign {agent_input.campaign_id} in {execution_time:.2f}s")
@@ -97,7 +97,7 @@ class BaseAgent(ABC):
                 status=AgentExecutionStatus.FAILED,
                 error_message=error_msg,
                 execution_time_seconds=self.timeout_seconds,
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(timezone.utc)
             )
             
         except Exception as e:
@@ -107,7 +107,7 @@ class BaseAgent(ABC):
             
             await self._update_progress(AgentStatus.ERROR, self.progress_percentage, error_msg)
             
-            execution_time = (datetime.utcnow() - self.execution_start_time).total_seconds()
+            execution_time = (datetime.now(timezone.utc) - self.execution_start_time).total_seconds()
             
             return AgentOutput(
                 agent_type=self.agent_type,
@@ -115,7 +115,7 @@ class BaseAgent(ABC):
                 status=AgentExecutionStatus.FAILED,
                 error_message=error_msg,
                 execution_time_seconds=execution_time,
-                timestamp=datetime.utcnow()
+                timestamp=datetime.now(timezone.utc)
             )
     
     @abstractmethod
@@ -157,22 +157,31 @@ class BaseAgent(ABC):
                 'progress_percentage': progress,
                 'message': message,
                 'started_at': self.execution_start_time,
-                'updated_at': datetime.utcnow()
+                'updated_at': datetime.now(timezone.utc)
             }
             
             if status == AgentStatus.COMPLETED:
-                progress_data['completed_at'] = datetime.utcnow()
+                progress_data['completed_at'] = datetime.now(timezone.utc)
             elif status == AgentStatus.ERROR:
                 progress_data['error_details'] = message
             
             if details:
                 progress_data['details'] = details
             
-            await firestore_service.update_agent_progress(
-                self.current_campaign_id,
-                self.agent_name,
-                progress_data
-            )
+            # Try to update Firestore, but don't block if it fails
+            try:
+                await asyncio.wait_for(
+                    db_manager.update_agent_progress(
+                        self.current_campaign_id,
+                        self.agent_name,
+                        progress_data
+                    ),
+                    timeout=5.0  # 5 second timeout
+                )
+            except asyncio.TimeoutError:
+                self.logger.warning(f"Database progress update timed out for {self.agent_name}")
+            except Exception as db_error:
+                self.logger.warning(f"Database progress update failed for {self.agent_name}: {db_error}")
             
             self.logger.debug(f"Updated progress: {progress}% - {message}")
             
@@ -229,7 +238,7 @@ class BaseAgent(ABC):
             'message': f'{self.agent_name} used fallback data due to execution failure',
             'campaign_id': agent_input.campaign_id,
             'agent_type': self.agent_type.value,
-            'timestamp': datetime.utcnow().isoformat()
+            'timestamp': datetime.now(timezone.utc).isoformat()
         }
     
     async def health_check(self) -> Dict[str, Any]:

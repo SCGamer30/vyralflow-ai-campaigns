@@ -19,7 +19,6 @@ import { Meteors } from "@/components/ui/meteors";
 import { AgentProgressCard } from "@/components/dashboard/AgentProgressCard";
 import {
   useCampaignStatus,
-  useForceCompleteCampaign,
 } from "@/hooks/useCampaign";
 import {
   ArrowLeft,
@@ -28,8 +27,6 @@ import {
   Loader2,
   XCircle,
   Eye,
-  Zap,
-  AlertCircle,
   Rocket,
   Brain,
   Sparkles,
@@ -39,7 +36,6 @@ export function CampaignDashboard() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: campaign, isLoading, error } = useCampaignStatus(id);
-  const forceComplete = useForceCompleteCampaign();
 
   useEffect(() => {
     if (campaign?.status === "completed") {
@@ -153,15 +149,6 @@ export function CampaignDashboard() {
     }
   };
 
-  const handleForceComplete = async () => {
-    if (id) {
-      try {
-        await forceComplete.mutateAsync(id);
-      } catch (error) {
-        console.error("Failed to force complete:", error);
-      }
-    }
-  };
 
   const completedAgents = campaign.agent_progress.filter(
     (agent) => agent.status === "completed"
@@ -371,49 +358,6 @@ export function CampaignDashboard() {
             </div>
           </motion.div>
 
-          {/* Demo Controls (for hackathon) */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.8 }}
-          >
-            <Card className="bg-black/20 backdrop-blur-lg border border-gray-600/30 relative overflow-hidden">
-              <div className="absolute inset-0 opacity-10">
-                <SparklesComponent 
-                  particleColor="#fbbf24" 
-                  particleDensity={10}
-                  minSize={1}
-                  maxSize={2}
-                />
-              </div>
-              
-              <CardHeader className="relative z-10">
-                <CardTitle className="flex items-center gap-2 text-white">
-                  <AlertCircle className="h-5 w-5 text-yellow-400" />
-                  Demo Controls
-                </CardTitle>
-                <CardDescription className="text-gray-300">For demonstration purposes only</CardDescription>
-              </CardHeader>
-              <CardContent className="relative z-10">
-                <div className="flex items-center justify-between">
-                  <p className="text-gray-300">
-                    If the campaign is taking too long, you can force complete it for demo purposes.
-                  </p>
-                  <Button
-                    variant="outline"
-                    onClick={handleForceComplete}
-                    disabled={
-                      campaign.status !== "processing" || forceComplete.isPending
-                    }
-                    className="border-yellow-400 text-yellow-400 hover:bg-yellow-400/10 gap-2"
-                  >
-                    <Zap className="w-4 h-4" />
-                    {forceComplete.isPending ? "Completing..." : "Force Complete"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
 
           {/* Success Message */}
           <AnimatePresence>

@@ -13,22 +13,43 @@ export const useCreateCampaign = () => {
       queryClient.invalidateQueries({ queryKey: ["campaigns"] });
       return data;
     },
+    retry: 1, // Retry once for network errors
+    onError: (error) => {
+      console.error("Campaign creation failed:", error);
+    },
   });
 };
 
-// Hook to get campaign status with polling
+// Hook to get campaign status with polling and error handling
 export const useCampaignStatus = (id: string | undefined, enabled = true) => {
   return useQuery({
     queryKey: ["campaign", "status", id],
     queryFn: () => campaignApi.getStatus(id!),
     enabled: !!id && enabled,
     refetchInterval: (query) => {
+      // Stop polling if there's an error
+      if (query.state.error) {
+        return false;
+      }
+      
       // Poll every 3 seconds if campaign is processing
       const data = query.state.data;
       if (data?.status === "processing") {
         return 3000;
       }
       return false;
+    },
+    retry: (failureCount, error) => {
+      // Retry up to 3 times for network errors, but not for 404s
+      if (error instanceof Error && error.message.includes('404')) {
+        return false;
+      }
+      return failureCount < 3;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    staleTime: 1000, // Data is fresh for 1 second
+    onError: (error) => {
+      console.error("Campaign status polling failed:", error);
     },
   });
 };
@@ -40,23 +61,9 @@ export const useCampaignResults = (id: string | undefined) => {
     queryFn: () => campaignApi.getResults(id!),
     enabled: !!id,
     staleTime: 5 * 60 * 1000, // Consider data stale after 5 minutes
-  });
-};
-
-// Hook to force complete a campaign
-export const useForceCompleteCampaign = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (id: string) => campaignApi.forceComplete(id),
-    onSuccess: (_, variables) => {
-      // Invalidate status and results queries for this campaign
-      queryClient.invalidateQueries({
-        queryKey: ["campaign", "status", variables],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["campaign", "results", variables],
-      });
+    retry: 2,
+    onError: (error) => {
+      console.error("Failed to fetch campaign results:", error);
     },
   });
 };

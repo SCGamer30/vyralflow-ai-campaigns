@@ -78,7 +78,7 @@ async def root():
 async def health_check():
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(datetime.timezone.utc).isoformat(),
         "services": {
             "api": "healthy",
             "trend_analyzer": "ready",
@@ -117,7 +117,7 @@ async def create_campaign(request: CampaignRequest):
         campaign_id=campaign_id,
         status="processing",
         agent_progress=agent_progress,
-        created_at=datetime.utcnow().isoformat()
+        created_at=datetime.now(datetime.timezone.utc).isoformat()
     )
     
     campaigns[campaign_id] = campaign
@@ -221,25 +221,25 @@ async def get_agents_status():
             "agent_name": "trend_analyzer",
             "status": "healthy",
             "description": "Analyzes current trends and viral patterns",
-            "last_updated": datetime.utcnow().isoformat()
+            "last_updated": datetime.now(datetime.timezone.utc).isoformat()
         },
         {
             "agent_name": "content_writer", 
             "status": "healthy",
             "description": "Creates engaging, platform-optimized content",
-            "last_updated": datetime.utcnow().isoformat()
+            "last_updated": datetime.now(datetime.timezone.utc).isoformat()
         },
         {
             "agent_name": "visual_designer",
             "status": "healthy", 
             "description": "Suggests visual assets and design concepts",
-            "last_updated": datetime.utcnow().isoformat()
+            "last_updated": datetime.now(datetime.timezone.utc).isoformat()
         },
         {
             "agent_name": "campaign_scheduler",
             "status": "healthy",
             "description": "Optimizes posting times for maximum engagement",
-            "last_updated": datetime.utcnow().isoformat()
+            "last_updated": datetime.now(datetime.timezone.utc).isoformat()
         }
     ]
 
@@ -262,7 +262,7 @@ async def run_agent_pipeline(campaign_id: str, request: CampaignRequest):
         # Start agent
         agent_progress.status = "running"
         agent_progress.message = f"Processing with {agent_name.replace('_', ' ').title()}..."
-        agent_progress.started_at = datetime.utcnow().isoformat()
+        agent_progress.started_at = datetime.now(datetime.timezone.utc).isoformat()
         
         # Simulate processing with progress updates
         for percent in range(0, 101, 20):
@@ -273,14 +273,14 @@ async def run_agent_pipeline(campaign_id: str, request: CampaignRequest):
         agent_progress.status = "completed"
         agent_progress.progress_percentage = 100
         agent_progress.message = f"{agent_name.replace('_', ' ').title()} completed successfully"
-        agent_progress.completed_at = datetime.utcnow().isoformat()
+        agent_progress.completed_at = datetime.now(datetime.timezone.utc).isoformat()
         
         # Small delay between agents
         await asyncio.sleep(1)
     
     # Mark campaign as completed
     campaign.status = "completed"
-    campaign.completed_at = datetime.utcnow().isoformat()
+    campaign.completed_at = datetime.now(datetime.timezone.utc).isoformat()
 
 if __name__ == "__main__":
     print("🚀 Vyralflow AI - Multi-Agent Campaign Generator")

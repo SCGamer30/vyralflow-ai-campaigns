@@ -1,5 +1,5 @@
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import asyncio
 
 from app.agents.base_agent import BaseAgent
@@ -69,7 +69,7 @@ class ContentWriterAgent(BaseAgent):
             return {
                 'content': content_result.dict(),
                 'metadata': {
-                    'generation_timestamp': datetime.utcnow().isoformat(),
+                    'generation_timestamp': datetime.now(timezone.utc).isoformat(),
                     'platforms_generated': len(platform_contents),
                     'total_variations': self._count_total_variations(platform_contents),
                     'agent_version': '1.0.0'
@@ -166,14 +166,53 @@ class ContentWriterAgent(BaseAgent):
         
         return truncated
     
-    def _enhance_hashtags(
+    async def _enhance_hashtags(
+        self,
+        original_hashtags: List[str],
+        trend_data: Dict[str, Any],
+        platform: str,
+        agent_input: AgentInput
+    ) -> List[str]:
+        """Enhance hashtags with trending data and AI-powered suggestions."""
+        try:
+            # Get AI-powered hashtag suggestions from Gemini
+            ai_hashtags = await gemini_service.generate_hashtags(
+                business_name=agent_input.business_name,
+                industry=agent_input.industry,
+                campaign_goal=agent_input.campaign_goal,
+                platform=platform,
+                brand_voice=agent_input.brand_voice,
+                target_audience=agent_input.target_audience,
+                trending_topics=trend_data.get('trending_topics', []),
+                keywords=agent_input.keywords
+            )
+            
+            # Combine all hashtag sources
+            combined_hashtags = list(original_hashtags)
+            combined_hashtags.extend(ai_hashtags)
+            combined_hashtags.extend(trend_data.get('trending_hashtags', []))
+            
+            # Add platform-specific and industry-specific hashtags
+            combined_hashtags.extend(self._get_platform_specific_hashtags(platform))
+            combined_hashtags.extend(self._get_industry_hashtags(agent_input.industry))
+            
+            # Remove duplicates and return top hashtags
+            unique_hashtags = list(dict.fromkeys(combined_hashtags))
+            return unique_hashtags[:15]  # Increased limit to 15 hashtags
+        
+        except Exception as e:
+            self.logger.error(f"Failed to enhance hashtags with AI: {e}")
+            # Fallback to original enhancement method
+            return self._fallback_enhance_hashtags(original_hashtags, trend_data, platform, agent_input.industry)
+    
+    def _fallback_enhance_hashtags(
         self,
         original_hashtags: List[str],
         trend_data: Dict[str, Any],
         platform: str,
         industry: str = ""
     ) -> List[str]:
-        """Enhance hashtags with trending data."""
+        """Fallback hashtag enhancement logic."""
         enhanced_hashtags = list(original_hashtags)
         
         # Add trending hashtags (more generous)
@@ -210,7 +249,6 @@ class ContentWriterAgent(BaseAgent):
             'twitter': ['#trending', '#follow', '#retweet'],
             'linkedin': ['#professional', '#business', '#networking'],
             'facebook': ['#like', '#share', '#community'],
-            'tiktok': ['#fyp', '#viral', '#trending']
         }
         
         return platform_hashtags.get(platform.lower(), [])
@@ -237,7 +275,6 @@ class ContentWriterAgent(BaseAgent):
             'twitter': ['#MondayMotivation', '#ThrowbackThursday', '#FollowFriday', '#WisdomWednesday', '#TuesdayTips'],
             'linkedin': ['#leadership', '#success', '#growth', '#innovation', '#teamwork'],
             'facebook': ['#ThankfulThursday', '#FeelGoodFriday', '#MotivationalMonday', '#WisdomWednesday', '#transformation'],
-            'tiktok': ['#foryou', '#challenge', '#duet', '#funny', '#creative']
         }
         
         return engagement_hashtags.get(platform.lower(), ['#motivation', '#success', '#growth'])
@@ -253,7 +290,6 @@ class ContentWriterAgent(BaseAgent):
             'instagram': (125, 300),
             'linkedin': (150, 400),
             'facebook': (100, 250),
-            'tiktok': (50, 120)
         }
         
         optimal_range = optimal_lengths.get(platform.lower(), (100, 300))
@@ -296,25 +332,21 @@ class ContentWriterAgent(BaseAgent):
         """Get fallback content for a platform when generation fails."""
         fallback_templates = {
             'instagram': {
-                'text': f"🌟 Exciting updates from {agent_input.business_name}! {agent_input.campaign_goal[:100]}... Follow us for more! #business #update",
-                'hashtags': ['#business', '#update', '#follow', '#exciting']
+                'text': f"🌟 We're thrilled to share some incredible news from {agent_input.business_name}! Our team has been working tirelessly to bring you something truly special that aligns perfectly with our mission: {agent_input.campaign_goal}. This isn't just another update - it's a reflection of our commitment to excellence and innovation in the {agent_input.industry} industry. We believe in creating meaningful experiences that resonate with our community, and this initiative represents a significant step forward in that journey. Our team is incredibly passionate about what we do, and we're excited to share this milestone with all of you who have supported us along the way. From concept to execution, every detail has been carefully crafted with our valued customers in mind. We can't wait for you to experience what we've been developing and see how it transforms your experience with us. Stay tuned for more exciting announcements coming your way! 🚀✨ #innovation #excellence #community #growth #passion #quality #transformation #milestone",
+                'hashtags': ['#innovation', '#excellence', '#community', '#growth', '#passion', '#quality', '#transformation', '#milestone', '#industry', '#success', '#teamwork', '#dedication']
             },
             'twitter': {
-                'text': f"📢 {agent_input.business_name}: {agent_input.campaign_goal[:150]} #business #news",
-                'hashtags': ['#business', '#news', '#update']
+                'text': f"🚀 Big news from {agent_input.business_name}! We're excited to announce our latest initiative focused on {agent_input.campaign_goal}. This represents a major step forward in our commitment to excellence in the {agent_input.industry} space. Our team has been working passionately to bring this vision to life, and we're thrilled to share this journey with our amazing community. Innovation drives everything we do, and this project exemplifies our dedication to pushing boundaries and creating meaningful impact. Thank you to everyone who has supported us - your enthusiasm fuels our passion! #innovation #growth #excellence #community",
+                'hashtags': ['#innovation', '#growth', '#excellence', '#community', '#leadership', '#success']
             },
             'linkedin': {
-                'text': f"Professional update from {agent_input.business_name}: We're focused on {agent_input.campaign_goal}. This initiative demonstrates our commitment to excellence in the {agent_input.industry} industry.",
-                'hashtags': ['#business', '#professional', '#industry', '#growth']
+                'text': f"Professional update from {agent_input.business_name}: We're proud to announce a significant milestone in our strategic journey focused on {agent_input.campaign_goal}. This initiative demonstrates our unwavering commitment to excellence and innovation in the {agent_input.industry} industry. Our team's dedication to delivering exceptional value has driven us to develop solutions that not only meet current market demands but anticipate future needs. Through collaborative efforts and strategic thinking, we've created something that truly represents our core values and vision for the future. We believe that sustainable growth comes from listening to our stakeholders, understanding market dynamics, and consistently delivering on our promises. This project exemplifies our approach to leadership and our commitment to making a positive impact in our industry. We're excited to share more details about this initiative and its potential to drive meaningful change in the marketplace.",
+                'hashtags': ['#leadership', '#innovation', '#growth', '#excellence', '#strategy', '#industry', '#professional', '#teamwork']
             },
             'facebook': {
-                'text': f"Hello everyone! {agent_input.business_name} has some exciting news to share: {agent_input.campaign_goal[:200]}... Stay tuned for more updates!",
-                'hashtags': ['#business', '#news', '#community', '#update']
+                'text': f"Hello everyone! 👋 We have some absolutely amazing news to share from {agent_input.business_name}! Our team has been working on something truly special that we believe will make a real difference: {agent_input.campaign_goal}. This journey has been incredible, filled with challenges that have made us stronger and successes that have brought our team closer together. We're passionate about what we do in the {agent_input.industry} industry, and this latest development represents everything we stand for - innovation, quality, and genuine care for our community. From brainstorming sessions to late-night planning, every moment has been worth it knowing that this will benefit all of you. We've always believed that the best ideas come from listening to our community and understanding what truly matters to you. This initiative is a direct result of that philosophy, and we couldn't be more excited to share it with the people who matter most - our amazing supporters and customers! Stay tuned for more updates because this is just the beginning! 🎉✨",
+                'hashtags': ['#community', '#innovation', '#teamwork', '#excellence', '#passion', '#growth', '#quality', '#exciting']
             },
-            'tiktok': {
-                'text': f"✨ {agent_input.business_name} vibes! {agent_input.campaign_goal[:80]}... #fyp #business",
-                'hashtags': ['#fyp', '#business', '#trending', '#viral']
-            }
         }
         
         template = fallback_templates.get(platform.lower(), fallback_templates['instagram'])
@@ -352,7 +384,7 @@ class ContentWriterAgent(BaseAgent):
         return {
             'content': content_result.dict(),
             'metadata': {
-                'generation_timestamp': datetime.utcnow().isoformat(),
+                'generation_timestamp': datetime.now(timezone.utc).isoformat(),
                 'platforms_generated': len(platform_contents),
                 'fallback_used': True,
                 'reason': 'Primary content generation failed',

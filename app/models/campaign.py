@@ -36,7 +36,6 @@ class SupportedPlatform(str, Enum):
     TWITTER = "twitter"
     LINKEDIN = "linkedin"
     FACEBOOK = "facebook"
-    TIKTOK = "tiktok"
 
 
 class CampaignRequest(BaseModel):
@@ -109,6 +108,14 @@ class AgentProgress(BaseModel):
     error_details: Optional[str] = Field(default=None, description="Error details if failed")
 
 
+class TrendingTopic(BaseModel):
+    """Trending topic with relevance score and type."""
+    
+    topic: str
+    relevance_score: int = Field(default=0, ge=0, le=100)
+    trend_type: str = Field(default="stable")
+
+
 class TrendAnalysisResult(BaseModel):
     """Results from trend analysis agent."""
     
@@ -146,7 +153,6 @@ class ContentResult(BaseModel):
     twitter: Optional[PlatformContent] = None
     linkedin: Optional[PlatformContent] = None
     facebook: Optional[PlatformContent] = None
-    tiktok: Optional[PlatformContent] = None
 
 
 class ImageSuggestion(BaseModel):
@@ -183,7 +189,6 @@ class ScheduleResult(BaseModel):
     twitter: Optional[PlatformSchedule] = None
     linkedin: Optional[PlatformSchedule] = None
     facebook: Optional[PlatformSchedule] = None
-    tiktok: Optional[PlatformSchedule] = None
     posting_sequence: List[Dict[str, Any]] = Field(default_factory=list)
 
 
@@ -203,14 +208,6 @@ class PerformancePredictions(BaseModel):
             "impressions_estimate": "0"
         }
     )
-
-
-class TrendingTopic(BaseModel):
-    """Trending topic with relevance score and type."""
-    
-    topic: str
-    relevance_score: int = Field(default=0, ge=0, le=100)
-    trend_type: str = Field(default="stable")
 
 
 class CampaignResults(BaseModel):

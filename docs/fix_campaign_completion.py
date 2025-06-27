@@ -34,7 +34,7 @@ async def _finalize_campaign(self, campaign_id: str, agent_results: Dict[str, An
         updates = {
             'status': 'completed',  # Changed from CampaignStatus.COMPLETED.value
             'results': campaign_results.dict(),
-            'completed_at': datetime.utcnow()
+            'completed_at': datetime.now(datetime.timezone.utc)
         }
         
         await firestore_service.update_campaign(campaign_id, updates)

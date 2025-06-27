@@ -94,8 +94,8 @@ async def create_campaign(request: CampaignRequest):
             {"agent_name": "visual_designer", "status": "completed", "progress": 100, "message": "Visuals designed successfully"},
             {"agent_name": "campaign_scheduler", "status": "completed", "progress": 100, "message": "Schedule optimized successfully"}
         ],
-        "created_at": datetime.utcnow().isoformat(),
-        "completed_at": datetime.utcnow().isoformat()
+        "created_at": datetime.now(datetime.timezone.utc).isoformat(),
+        "completed_at": datetime.now(datetime.timezone.utc).isoformat()
     }
     
     # Store the campaign

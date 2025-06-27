@@ -16,11 +16,11 @@ class GeminiService:
     """Google Gemini API for AI-generated content with timeout handling"""
     
     def __init__(self):
-        self.api_key = os.getenv('GEMINI_API_KEY', 'AIzaSyBHFyhc_JMIe_Rqxs6V-h58dYnt-dPXaXk')
+        self.api_key = os.getenv('GEMINI_API_KEY')
         self.executor = ThreadPoolExecutor(max_workers=3)  # Add thread pool
         if self.api_key and self.api_key != 'your-gemini-api-key':
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel('gemini-pro')
+            self.model = genai.GenerativeModel('gemini-1.5-flash')
             print("🤖 Gemini Service initialized with timeout protection")
         else:
             self.model = None
@@ -99,7 +99,7 @@ async def force_complete_campaign(campaign_id: str):
         # Update campaign with completed status and sample results
         campaign.update({
             'status': 'completed',
-            'completed_at': datetime.utcnow().isoformat(),
+            'completed_at': datetime.now(datetime.timezone.utc).isoformat(),
             'processing_time': '5.0 seconds (force completed)',
             'agent_progress': [
                 {
@@ -107,7 +107,7 @@ async def force_complete_campaign(campaign_id: str):
                     "status": "completed", 
                     "progress_percentage": 100,
                     "message": "Live trends analyzed successfully",
-                    "completed_at": datetime.utcnow().isoformat(),
+                    "completed_at": datetime.now(datetime.timezone.utc).isoformat(),
                     "ai_generated": True
                 },
                 {
@@ -115,7 +115,7 @@ async def force_complete_campaign(campaign_id: str):
                     "status": "completed",
                     "progress_percentage": 100, 
                     "message": "AI content generated successfully (forced)",
-                    "completed_at": datetime.utcnow().isoformat(),
+                    "completed_at": datetime.now(datetime.timezone.utc).isoformat(),
                     "ai_generated": True
                 },
                 {
@@ -123,7 +123,7 @@ async def force_complete_campaign(campaign_id: str):
                     "status": "completed",
                     "progress_percentage": 100,
                     "message": "Visual assets curated successfully", 
-                    "completed_at": datetime.utcnow().isoformat(),
+                    "completed_at": datetime.now(datetime.timezone.utc).isoformat(),
                     "ai_generated": True
                 },
                 {
@@ -131,7 +131,7 @@ async def force_complete_campaign(campaign_id: str):
                     "status": "completed",
                     "progress_percentage": 100,
                     "message": "Schedule optimized successfully",
-                    "completed_at": datetime.utcnow().isoformat(),
+                    "completed_at": datetime.now(datetime.timezone.utc).isoformat(),
                     "ai_generated": True
                 }
             ],

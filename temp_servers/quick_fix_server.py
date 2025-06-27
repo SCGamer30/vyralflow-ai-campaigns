@@ -82,7 +82,7 @@ def create_quick_app():
         return {
             "status": "healthy",
             "version": "1.0.0",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(datetime.timezone.utc).isoformat(),
             "services": {
                 "api": "healthy",
                 "agents": "ready",
@@ -112,7 +112,7 @@ def create_quick_app():
             campaign_id=campaign_id,
             status="processing",
             agent_progress=agent_progress,
-            created_at=datetime.utcnow().isoformat()
+            created_at=datetime.now(datetime.timezone.utc).isoformat()
         )
         
         campaigns[campaign_id] = campaign
@@ -201,7 +201,7 @@ async def simulate_campaign_progress(campaign_id: str, campaigns: dict):
             if progress.agent_name == agent:
                 progress.status = "running"
                 progress.message = f"Executing {agent}..."
-                progress.started_at = datetime.utcnow().isoformat()
+                progress.started_at = datetime.now(datetime.timezone.utc).isoformat()
                 break
         
         # Simulate progress
@@ -218,7 +218,7 @@ async def simulate_campaign_progress(campaign_id: str, campaigns: dict):
                 progress.status = "completed"
                 progress.progress_percentage = 100
                 progress.message = f"{agent} completed successfully"
-                progress.completed_at = datetime.utcnow().isoformat()
+                progress.completed_at = datetime.now(datetime.timezone.utc).isoformat()
                 break
     
     # Mark campaign as completed

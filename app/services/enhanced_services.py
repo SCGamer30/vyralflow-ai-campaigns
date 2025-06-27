@@ -17,7 +17,7 @@ class UnsplashService:
     """Real Unsplash API integration for visual suggestions"""
     
     def __init__(self):
-        self.api_key = os.getenv('UNSPLASH_ACCESS_KEY', 'XqpZt1BbdHRLuCcqrXJJFQeRoRz1KWrg_grNcnpsjBw')
+        self.api_key = os.getenv('UNSPLASH_ACCESS_KEY')
         self.base_url = "https://api.unsplash.com"
         self.request_count = 0
         self.max_requests_per_hour = 50  # Unsplash free tier limit
@@ -207,7 +207,7 @@ class GeminiService:
     """Google Gemini API for AI-generated content"""
     
     def __init__(self):
-        self.api_key = os.getenv('GEMINI_API_KEY', 'AIzaSyBHFyhc_JMIe_Rqxs6V-h58dYnt-dPXaXk')
+        self.api_key = os.getenv('GEMINI_API_KEY')
         self.model = None
         self.chat_session = None
         
@@ -220,7 +220,6 @@ class GeminiService:
                     "top_p": 0.8,
                     "top_k": 64,
                     "max_output_tokens": 8192,
-                    "response_mime_type": "text/plain",
                 }
                 
                 safety_settings = [
@@ -231,7 +230,7 @@ class GeminiService:
                 ]
                 
                 self.model = genai.GenerativeModel(
-                    model_name="gemini-pro",
+                    model_name="gemini-1.5-flash",
                     generation_config=generation_config,
                     safety_settings=safety_settings
                 )
@@ -299,168 +298,222 @@ class GeminiService:
         
         if platform.lower() == "instagram":
             return f"""
-            Create compelling, detailed Instagram content based on the following information:
+            Create compelling Instagram content for {business}, a {industry} business.
             
-            Business: {business}
-            Industry: {industry}
-            Campaign Goal: {goal}
-            Brand Voice: {voice}
+            Business Information:
+            - Business Name: {business}
+            - Industry: {industry}
+            - Campaign Goal: {goal}
+            - Brand Voice: {voice}
             
-            Generate:
-            1. Main post caption (3-4 sentences minimum, storytelling approach, engaging and visual-focused, max 2200 characters)
-            2. 6-7 highly relevant hashtags (mix of popular, niche, and industry-specific)
-            3. 2 alternative caption variations (also 3-4 sentences each)
-            
-            Requirements:
-            - Write 3-4 full sentences that tell a story or provide value
+            Content Requirements:
+            - Write 3-4 full sentences about the BUSINESS and their products/services
+            - Focus entirely on what the business offers, their story, their customers
+            - DO NOT mention AI, automation, or technology tools
+            - Tell their brand story and highlight their unique value
             - Use emojis strategically (2-3 per post)
-            - Include a strong call-to-action
-            - Optimize for maximum engagement and shares
-            - Match the brand voice perfectly
-            - Make it feel authentic and human
-            - Focus on benefits and outcomes
-            - Create curiosity and emotion
+            - Include a strong call-to-action related to their business
+            - Make it authentic and engaging for their target audience
+            - Focus on customer benefits and experiences
+            
+            Examples of what TO focus on:
+            - Their products/services and quality
+            - Customer experiences and testimonials
+            - Behind-the-scenes of their business
+            - Special offers, new products, or announcements
+            - Their mission, values, and community impact
+            - Seasonal content related to their business
+            
+            DO NOT include any references to:
+            - AI or artificial intelligence
+            - Social media management tools
+            - Content creation processes
+            - Technology or automation
             
             Format as JSON:
             {{
-                "text": "detailed caption text with 3-4 sentences",
+                "text": "detailed caption about the business and their offerings",
                 "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7"],
-                "cta": "call to action",
-                "hook": "engagement hook",
+                "cta": "call to action related to the business",
+                "hook": "engagement hook about the business",
                 "viral_elements": ["element1", "element2"]
             }}
             """
         elif platform.lower() == "twitter":
             return f"""
-            Create compelling, detailed Twitter content based on the following information:
+            Create compelling Twitter content for {business}, a {industry} business.
             
-            Business: {business}
-            Industry: {industry}
-            Campaign Goal: {goal}
-            Brand Voice: {voice}
+            Business Information:
+            - Business Name: {business}
+            - Industry: {industry}
+            - Campaign Goal: {goal}
+            - Brand Voice: {voice}
             
-            Generate:
-            1. Main tweet (2-3 sentences, under 280 characters total, but use most of the space for maximum impact)
-            2. 6-7 relevant hashtags (mix of trending, industry, and engagement hashtags)
-            3. 2 alternative tweet variations (also 2-3 sentences each)
-            
-            Requirements:
-            - Write 2-3 concise but impactful sentences
-            - Include powerful, action-oriented language
-            - Create urgency or curiosity
-            - Encourage retweets and engagement
+            Content Requirements:
+            - Write 2-3 concise sentences about the BUSINESS and their products/services
+            - Stay under 280 characters but make maximum impact
+            - Focus entirely on what the business offers and their value proposition
+            - DO NOT mention AI, automation, or technology tools
+            - Include powerful, action-oriented language about their business
+            - Create urgency or curiosity about their products/services
             - Match the brand voice perfectly
-            - Use trending topics strategically
-            - Make it highly shareable
-            - Include a clear value proposition
+            - Make it highly shareable and engaging
+            - Include a clear business value proposition
+            
+            Examples of what TO focus on:
+            - Product launches, features, or benefits
+            - Customer success stories or testimonials
+            - Special offers or promotions
+            - Business milestones or achievements
+            - Industry insights from their perspective
+            - Behind-the-scenes business content
+            
+            DO NOT include any references to:
+            - AI or artificial intelligence
+            - Social media management tools
+            - Content creation processes
+            - Technology or automation
             
             Format as JSON:
             {{
-                "text": "detailed tweet text with 2-3 sentences",
+                "text": "impactful tweet about the business and their offerings",
                 "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7"],
-                "cta": "call to action",
-                "hook": "engagement hook",
+                "cta": "call to action related to the business",
+                "hook": "engagement hook about the business",
                 "viral_elements": ["element1", "element2"]
             }}
             """
         elif platform.lower() == "linkedin":
             return f"""
-            Create detailed, professional LinkedIn content based on the following information:
+            Create professional LinkedIn content for {business}, a {industry} business.
             
-            Business: {business}
-            Industry: {industry}
-            Campaign Goal: {goal}
-            Brand Voice: {voice}
+            Business Information:
+            - Business Name: {business}
+            - Industry: {industry}
+            - Campaign Goal: {goal}
+            - Brand Voice: {voice}
             
-            Generate:
-            1. Main post (professional tone, 2-3 full paragraphs with 4-5 sentences each, max 3000 characters)
-            2. 6-7 relevant hashtags (professional, industry-focused, and trending business hashtags)
-            3. 2 alternative post variations (also 2-3 paragraphs each)
-            
-            Requirements:
-            - Write 2-3 full paragraphs with substantial content
-            - Professional and authoritative tone with personality
+            Content Requirements:
+            - Write 2-3 professional paragraphs about the BUSINESS and their expertise
+            - Focus entirely on their industry knowledge, business insights, and professional value
+            - DO NOT mention AI, automation, or technology tools
             - Provide genuine value and insights to professional audience
-            - Include industry trends and business implications
+            - Share their business perspective and industry expertise
+            - Include business achievements, client success stories, or industry insights
             - Match the brand voice while maintaining professionalism
             - Encourage meaningful professional discussion
-            - Share actionable insights or lessons
-            - Create thought leadership positioning
-            - Use storytelling when appropriate
+            - Position them as thought leaders in their industry
+            
+            Examples of what TO focus on:
+            - Industry insights and trends from their business perspective
+            - Client success stories and case studies
+            - Business growth strategies and lessons learned
+            - Professional expertise and qualifications
+            - Company culture and team achievements
+            - Industry challenges they help solve
+            - Business milestones and accomplishments
+            
+            DO NOT include any references to:
+            - AI or artificial intelligence
+            - Social media management tools
+            - Content creation processes
+            - Technology or automation (unless it's their core business)
             
             Format as JSON:
             {{
-                "text": "detailed post text with 2-3 full paragraphs",
+                "text": "professional post about the business and their industry expertise",
                 "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7"],
-                "cta": "call to action",
-                "hook": "engagement hook",
+                "cta": "professional call to action related to the business",
+                "hook": "professional engagement hook about the business",
                 "viral_elements": ["element1", "element2"]
             }}
             """
         elif platform.lower() == "facebook":
             return f"""
-            Create engaging, detailed Facebook content based on the following information:
+            Create engaging Facebook content for {business}, a {industry} business.
             
-            Business: {business}
-            Industry: {industry}
-            Campaign Goal: {goal}
-            Brand Voice: {voice}
+            Business Information:
+            - Business Name: {business}
+            - Industry: {industry}
+            - Campaign Goal: {goal}
+            - Brand Voice: {voice}
             
-            Generate:
-            1. Main post (conversational, community-focused, 3-4 sentences that create connection)
-            2. 6-7 relevant hashtags (community, industry, and engagement-focused)
-            3. 2 alternative post variations (also 3-4 sentences each)
-            
-            Requirements:
-            - Write 3-4 sentences that feel conversational and authentic
-            - Community-focused and relationship-building tone
-            - Encourage comments, shares, and meaningful discussion
+            Content Requirements:
+            - Write 3-4 conversational sentences about the BUSINESS and their community
+            - Focus entirely on their products/services and customer relationships
+            - DO NOT mention AI, automation, or technology tools
+            - Create genuine community connection around their business
+            - Tell their business story in a relatable, authentic way
+            - Include relatable experiences about their products/services
+            - Ask engaging questions about their business/industry
+            - Create emotional connection with their audience
             - Match the brand voice while being approachable
-            - Build genuine community connection
-            - Include relatable experiences or stories
-            - Ask engaging questions to drive interaction
-            - Create emotional connection with audience
+            
+            Examples of what TO focus on:
+            - Customer stories and experiences with their products/services
+            - Behind-the-scenes of their business operations
+            - Community events or local business involvement
+            - Product features, benefits, or customer satisfaction
+            - Business values and how they serve their community
+            - Seasonal content related to their products/services
+            - Questions about customer preferences or experiences
+            
+            DO NOT include any references to:
+            - AI or artificial intelligence
+            - Social media management tools
+            - Content creation processes
+            - Technology or automation
             
             Format as JSON:
             {{
-                "text": "detailed post text with 3-4 sentences",
+                "text": "engaging post about the business and their community",
                 "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7"],
-                "cta": "call to action",
-                "hook": "engagement hook",
+                "cta": "call to action related to the business",
+                "hook": "engagement hook about the business",
                 "viral_elements": ["element1", "element2"]
             }}
             """
         else:
-            # Default - use Instagram format for any unrecognized platform
+            # Default - use business-focused format for any unrecognized platform
             return f"""
-            Create compelling, detailed Instagram content based on the following information:
+            Create compelling content for {business}, a {industry} business.
             
-            Business: {business}
-            Industry: {industry}
-            Campaign Goal: {goal}
-            Brand Voice: {voice}
+            Business Information:
+            - Business Name: {business}
+            - Industry: {industry}
+            - Campaign Goal: {goal}
+            - Brand Voice: {voice}
             
-            Generate:
-            1. Main post caption (3-4 sentences minimum, storytelling approach, engaging and visual-focused, max 2200 characters)
-            2. 6-7 highly relevant hashtags (mix of popular, niche, and industry-specific)
-            3. 2 alternative caption variations (also 3-4 sentences each)
-            
-            Requirements:
-            - Write 3-4 full sentences that tell a story or provide value
+            Content Requirements:
+            - Write 3-4 full sentences about the BUSINESS and their products/services
+            - Focus entirely on what the business offers, their story, their customers
+            - DO NOT mention AI, automation, or technology tools
+            - Tell their brand story and highlight their unique value
             - Use emojis strategically (2-3 per post)
-            - Include a strong call-to-action
-            - Optimize for maximum engagement and shares
-            - Match the brand voice perfectly
-            - Make it feel authentic and human
-            - Focus on benefits and outcomes
-            - Create curiosity and emotion
+            - Include a strong call-to-action related to their business
+            - Make it authentic and engaging for their target audience
+            - Focus on customer benefits and experiences
+            
+            Examples of what TO focus on:
+            - Their products/services and quality
+            - Customer experiences and testimonials
+            - Behind-the-scenes of their business
+            - Special offers, new products, or announcements
+            - Their mission, values, and community impact
+            - Seasonal content related to their business
+            
+            DO NOT include any references to:
+            - AI or artificial intelligence
+            - Social media management tools
+            - Content creation processes
+            - Technology or automation
             
             Format as JSON:
             {{
-                "text": "detailed caption text with 3-4 sentences",
+                "text": "detailed content about the business and their offerings",
                 "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7"],
-                "cta": "call to action",
-                "hook": "engagement hook",
+                "cta": "call to action related to the business",
+                "hook": "engagement hook about the business",
                 "viral_elements": ["element1", "element2"]
             }}
             """
@@ -468,27 +521,87 @@ class GeminiService:
     def _parse_gemini_response(self, response_text: str, platform: str) -> Dict[str, Any]:
         """Parse Gemini response into structured format"""
         try:
-            # Try to extract JSON from the response
             import re
-            json_match = re.search(r'\{.*\}', response_text, re.DOTALL)
+            import json
+            
+            # Clean the response text - remove markdown code blocks
+            cleaned_text = response_text.strip()
+            
+            # Remove ```json and ``` markers if present
+            if cleaned_text.startswith('```json'):
+                cleaned_text = cleaned_text[7:]  # Remove ```json
+            if cleaned_text.startswith('```'):
+                cleaned_text = cleaned_text[3:]   # Remove ```
+            if cleaned_text.endswith('```'):
+                cleaned_text = cleaned_text[:-3]  # Remove trailing ```
+            
+            cleaned_text = cleaned_text.strip()
+            
+            # Try to extract JSON from the cleaned response
+            json_match = re.search(r'\{.*\}', cleaned_text, re.DOTALL)
             if json_match:
-                content_data = json.loads(json_match.group())
-                return {
-                    "text": content_data.get("text", response_text[:280]),
-                    "hashtags": content_data.get("hashtags", [f"#{platform}"]),
-                    "cta": content_data.get("cta", "Follow for more!"),
-                    "viral_elements": content_data.get("viral_elements", ["trending", "engaging"]),
-                    "character_count": len(content_data.get("text", "")),
-                    "ai_generated": True
-                }
-        except:
-            pass
+                json_str = json_match.group()
+                content_data = json.loads(json_str)
+                
+                # Extract and clean the text content
+                text_content = content_data.get("text", "")
+                
+                # Ensure we have clean text without JSON artifacts
+                if text_content and not text_content.startswith('{'):
+                    return {
+                        "text": text_content,
+                        "hashtags": content_data.get("hashtags", [f"#{platform}"]),
+                        "cta": content_data.get("cta", "Follow for more!"),
+                        "viral_elements": content_data.get("viral_elements", ["trending", "engaging"]),
+                        "character_count": len(text_content),
+                        "ai_generated": True
+                    }
+            
+            # If JSON parsing fails, try to extract plain text
+            # Look for text after common patterns - with more robust extraction
+            text_patterns = [
+                r'"text":\s*"([^"]+)"',
+                r'text:\s*"([^"]+)"',
+                r'"text":\s*"([^"]*(?:\\.[^"]*)*)"',  # Handle escaped quotes
+                r'Content:\s*(.+?)(?:\n|$)',
+                r'Caption:\s*(.+?)(?:\n|$)'
+            ]
+            
+            for pattern in text_patterns:
+                match = re.search(pattern, cleaned_text, re.IGNORECASE | re.DOTALL)
+                if match:
+                    extracted_text = match.group(1).strip()
+                    # Clean up escaped characters
+                    extracted_text = extracted_text.replace('\\"', '"').replace('\\n', '\n')
+                    if len(extracted_text) > 20:  # Ensure it's substantial content
+                        return {
+                            "text": extracted_text,
+                            "hashtags": [f"#{platform}", "#AI", "#viral"],
+                            "character_count": len(extracted_text),
+                            "ai_generated": True
+                        }
+                        
+        except Exception as e:
+            print(f"❌ JSON parsing error: {e}")
         
-        # Fallback parsing
+        # Fallback parsing - use the raw response if it looks like content (but not JSON)
+        clean_text = response_text.strip()
+        if (clean_text and len(clean_text) > 20 and 
+            not clean_text.startswith('{') and 
+            not clean_text.startswith('```') and
+            '"text":' not in clean_text):
+            return {
+                "text": clean_text[:500],  # Limit length
+                "hashtags": [f"#{platform}", "#AI", "#viral"],
+                "character_count": len(clean_text[:500]),
+                "ai_generated": True
+            }
+        
+        # Final fallback
         return {
-            "text": response_text[:280] if response_text else f"AI-generated content for {platform}",
-            "hashtags": [f"#{platform}", "#AI", "#viral"],
-            "character_count": len(response_text[:280]),
+            "text": f"Discover what makes {business or 'this business'} special in the {platform} community!",
+            "hashtags": [f"#{platform}", "#business", "#community"],
+            "character_count": len(f"Discover what makes {business or 'this business'} special in the {platform} community!"),
             "ai_generated": True
         }
     
@@ -555,25 +668,27 @@ class GeminiService:
         """Build prompt to enhance short content"""
         initial_text = initial_content.get('text', '')
         return f"""
-        The following content is too short and needs to be expanded into a full, engaging post:
+        The following content for {business} is too short and needs to be expanded into a full, engaging post:
         
         Current content: "{initial_text}"
         Business: {business}
         Platform: {platform}
         
         Please expand this into a compelling, detailed post that:
-        - Is at least 3-4 sentences long
-        - Tells a complete story or provides substantial value
-        - Maintains the same tone and message
-        - Includes engaging elements and emotional connection
+        - Is at least 3-4 sentences long about the BUSINESS and their offerings
+        - Tells a complete story about their products/services or customer value
+        - Maintains the same tone and message about the business
+        - Includes engaging elements about their business and customer experience
         - Is optimized for {platform}
+        - DO NOT mention AI, automation, or technology tools
+        - Focus entirely on the business, their products/services, and customer benefits
         
         Return the expanded content in the same JSON format:
         {{
-            "text": "expanded detailed content with 3-4+ sentences",
+            "text": "expanded detailed content about the business with 3-4+ sentences",
             "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7"],
-            "cta": "call to action",
-            "hook": "engagement hook",
+            "cta": "call to action related to the business",
+            "hook": "engagement hook about the business",
             "viral_elements": ["element1", "element2", "element3"]
         }}
         """

@@ -4,21 +4,37 @@ import type {
   CampaignResults,
 } from "@/types/campaign";
 
-const API_BASE_URL = "http://localhost:8080/api";
+const API_BASE_URL = "http://localhost:8000/api";
 
-// Helper function for API calls
+// Helper function for API calls with timeout and better error handling
 async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
+      signal: controller.signal,
       headers: {
         "Content-Type": "application/json",
         ...options?.headers,
       },
     });
 
+    clearTimeout(timeoutId);
+
     if (!response.ok) {
-      throw new Error(`API call failed: ${response.statusText}`);
+      // Handle specific HTTP status codes
+      if (response.status === 404) {
+        throw new Error(`Endpoint not found: ${endpoint}`);
+      } else if (response.status === 500) {
+        throw new Error(`Server error: ${response.statusText}`);
+      } else if (response.status === 422) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`Validation error: ${JSON.stringify(errorData)}`);
+      } else {
+        throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+      }
     }
 
     const data = await response.json();
@@ -30,6 +46,17 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
     
     return data as T;
   } catch (error) {
+    clearTimeout(timeoutId);
+    
+    // Handle fetch errors
+    if (error instanceof Error) {
+      if (error.name === 'AbortError') {
+        throw new Error(`Request timeout: ${endpoint} took longer than 30 seconds`);
+      } else if (error.message.includes('fetch')) {
+        throw new Error(`Network error: Unable to reach server at ${API_BASE_URL}`);
+      }
+    }
+    
     console.error(`API error for ${endpoint}:`, error);
     throw error;
   }
@@ -52,11 +79,6 @@ export const campaignApi = {
   getResults: (id: string) =>
     apiCall<CampaignResults>(`/campaigns/${id}/results`),
 
-  // Force complete a campaign (for demo purposes)
-  forceComplete: (id: string) =>
-    apiCall<CampaignResponse>(`/campaigns/${id}/force-complete`, {
-      method: "POST",
-    }),
 };
 
 // Health check API

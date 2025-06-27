@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.models.response import HealthCheckResponse
 from app.core.config import settings
@@ -50,7 +50,7 @@ async def health_check():
         response = HealthCheckResponse(
             status=overall_status,
             version=settings.version,
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.now(timezone.utc).isoformat(),
             services=services
         )
         
@@ -62,7 +62,7 @@ async def health_check():
         return HealthCheckResponse(
             status="unhealthy",
             version=settings.version,
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.now(timezone.utc).isoformat(),
             services={"error": str(e)}
         )
 
@@ -84,7 +84,7 @@ async def detailed_health_check():
         
         return {
             "status": "healthy",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "version": settings.version,
             "environment": {
                 "debug": settings.debug,
@@ -106,7 +106,7 @@ async def detailed_health_check():
         logger.error(f"Detailed health check failed: {e}")
         return {
             "status": "unhealthy",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "error": str(e)
         }
 
@@ -128,7 +128,7 @@ async def agents_health_check(
                 agent.get('status') == 'healthy' 
                 for agent in agents_status.values()
             ) else "degraded",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "agents": agents_status,
             "total_agents": len(agents_status)
         }
@@ -137,7 +137,7 @@ async def agents_health_check(
         logger.error(f"Agents health check failed: {e}")
         return {
             "status": "unhealthy",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "error": str(e)
         }
 
@@ -153,7 +153,7 @@ async def readiness_check():
         orchestrator_health = await campaign_orchestrator.health_check()
         
         if orchestrator_health.get('orchestrator') == 'healthy':
-            return {"status": "ready", "timestamp": datetime.utcnow().isoformat()}
+            return {"status": "ready", "timestamp": datetime.now(timezone.utc).isoformat()}
         else:
             logger.warning("Service not ready - orchestrator unhealthy")
             return {"status": "not_ready", "reason": "orchestrator_unhealthy"}
@@ -173,7 +173,7 @@ async def liveness_check():
         # Very basic check - just return success if we can respond
         return {
             "status": "alive",
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "version": settings.version
         }
     except Exception as e:

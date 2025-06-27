@@ -182,7 +182,7 @@ def custom_openapi():
     # Add server information
     openapi_schema["servers"] = [
         {"url": "https://api.vyralflow.ai", "description": "Production server"},
-        {"url": "http://localhost:8080", "description": "Development server"},
+        {"url": "http://localhost:8000", "description": "Development server"},
     ]
     
     app.openapi_schema = openapi_schema
@@ -364,7 +364,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=8080,
+        port=8000,
         reload=settings.debug,
         log_level="debug" if settings.debug else "info",
         access_log=True,

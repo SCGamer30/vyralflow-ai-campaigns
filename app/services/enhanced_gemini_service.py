@@ -8,7 +8,8 @@ import json
 import re
 from typing import Dict, Any, List, Optional
 import google.generativeai as genai
-from platform_content_models import (
+from app.core.config import settings
+from .platform_content_models import (
     ContentGenerationContext,
     PlatformContentAdvanced,
     InstagramStorySlide,
@@ -21,10 +22,10 @@ class EnhancedGeminiService:
     """Enhanced Gemini AI service with platform-specific content generation"""
     
     def __init__(self):
-        self.api_key = os.getenv('GEMINI_API_KEY', 'AIzaSyBHFyhc_JMIe_Rqxs6V-h58dYnt-dPXaXk')
+        self.api_key = settings.gemini_api_key
         if self.api_key and self.api_key != 'your-gemini-api-key':
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel('gemini-pro')
+            self.model = genai.GenerativeModel('gemini-1.5-flash')
             print("🤖 Enhanced Gemini Service initialized")
         else:
             self.model = None

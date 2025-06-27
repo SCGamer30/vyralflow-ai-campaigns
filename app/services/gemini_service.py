@@ -19,7 +19,7 @@ class GeminiService:
         """Initialize Gemini client."""
         try:
             genai.configure(api_key=settings.gemini_api_key)
-            self.model = genai.GenerativeModel('gemini-pro')
+            self.model = genai.GenerativeModel('gemini-1.5-flash')
             self.executor = ThreadPoolExecutor(max_workers=5)
             logger.info("Gemini service initialized successfully")
         except Exception as e:
@@ -87,18 +87,95 @@ class GeminiService:
             'instagram': self._get_instagram_prompt(context),
             'twitter': self._get_twitter_prompt(context),
             'linkedin': self._get_linkedin_prompt(context),
-            'facebook': self._get_facebook_prompt(context),
-            'tiktok': self._get_tiktok_prompt(context)
+            'facebook': self._get_facebook_prompt(context)
         }
         
         prompt = platform_prompts.get(platform.lower(), platform_prompts['instagram'])
         
         try:
+            # Generate content and hashtags separately for better quality
             content = await self.generate_content(prompt)
-            return self._parse_content_response(content, platform)
+            parsed_content = self._parse_content_response(content, platform)
+            
+            # Generate AI-powered hashtags
+            ai_hashtags = await self.generate_hashtags(
+                business_name=business_name,
+                industry=industry,
+                campaign_goal=campaign_goal,
+                platform=platform,
+                brand_voice=brand_voice,
+                target_audience=target_audience,
+                trending_topics=trending_topics,
+                keywords=keywords
+            )
+            
+            # Replace hashtags with AI-generated ones if we got them
+            if ai_hashtags and len(ai_hashtags) > 0:
+                parsed_content['hashtags'] = ai_hashtags[:15]  # Use up to 15 AI hashtags
+                logger.info(f"Generated {len(ai_hashtags)} AI-powered hashtags for {platform}")
+            
+            return parsed_content
         except Exception as e:
             logger.error(f"Failed to generate {platform} content: {e}")
             return self._get_fallback_content(platform, business_name, campaign_goal)
+    
+    async def generate_hashtags(
+        self,
+        business_name: str,
+        industry: str,
+        campaign_goal: str,
+        platform: str,
+        brand_voice: str,
+        target_audience: Optional[str] = None,
+        trending_topics: Optional[List[str]] = None,
+        keywords: Optional[List[str]] = None
+    ) -> List[str]:
+        """Generate relevant and creative hashtags using Gemini AI."""
+        
+        context_parts = [
+            f"Business: {business_name}",
+            f"Industry: {industry}",
+            f"Campaign Goal: {campaign_goal}",
+            f"Platform: {platform}",
+            f"Brand Voice: {brand_voice}"
+        ]
+        
+        if target_audience:
+            context_parts.append(f"Target Audience: {target_audience}")
+        
+        if trending_topics:
+            context_parts.append(f"Trending Topics: {', '.join(trending_topics[:5])}")
+        
+        if keywords:
+            context_parts.append(f"Keywords: {', '.join(keywords[:10])}")
+        
+        context = "\n".join(context_parts)
+        
+        prompt = f"""
+        Generate a list of 15-20 highly relevant and creative hashtags for a social media post.
+        
+        {context}
+        
+        Requirements:
+        - Include a mix of popular, niche, and industry-specific hashtags.
+        - Ensure hashtags are relevant to the campaign goal and target audience.
+        - Do not include the # symbol in the output.
+        
+        Format your response as a JSON list of strings:
+        [
+            "hashtag1",
+            "hashtag2",
+            "hashtag3"
+        ]
+        """
+        
+        try:
+            content = await self.generate_content(prompt)
+            hashtags = json.loads(content)
+            return [f"#{tag}" for tag in hashtags]
+        except Exception as e:
+            logger.error(f"Failed to generate hashtags: {e}")
+            return []
     
     def _get_instagram_prompt(self, context: str) -> str:
         """Get Instagram-specific prompt."""
@@ -108,26 +185,36 @@ class GeminiService:
         {context}
         
         Generate:
-        1. Main post caption (3-4 sentences minimum, storytelling approach, engaging and visual-focused, max 2200 characters)
-        2. 6-7 highly relevant hashtags (mix of popular, niche, and industry-specific)
-        3. 2 alternative caption variations (also 3-4 sentences each)
+        1. Main post caption (8-12 sentences minimum, detailed storytelling approach, engaging and visual-focused, 800-1500 characters)
+        2. 10-15 highly relevant hashtags (mix of popular, niche, and industry-specific)
+        3. 3 alternative caption variations (also 8-12 sentences each)
         
         Requirements:
-        - Write 3-4 full sentences that tell a story or provide value
-        - Use emojis strategically (2-3 per post)
-        - Include a strong call-to-action
-        - Optimize for maximum engagement and shares
-        - Match the brand voice perfectly
-        - Incorporate trending topics naturally
-        - Make it feel authentic and human
-        - Focus on benefits and outcomes
-        - Create curiosity and emotion
+        - Write 8-12 full sentences that tell a compelling, detailed story or provide significant value
+        - Use emojis strategically (5-8 per post) for visual appeal and engagement
+        - Include a strong, compelling call-to-action that drives specific action
+        - Create much longer, more engaging content that encourages meaningful interaction
+        - Match the brand voice perfectly with authentic personality
+        - Incorporate trending topics naturally throughout the narrative
+        - Make it feel authentic, human, relatable, and conversational
+        - Focus on benefits, outcomes, emotional connection, and personal experiences
+        - Create curiosity, emotion, anticipation, and desire to engage
+        - Include specific details about the business, campaign, and unique value proposition
+        - Add storytelling elements like personal anecdotes, behind-the-scenes insights, or customer stories
+        - Use conversation starters and questions to encourage comments
+        - Include industry insights, tips, or valuable information
+        
+        CRITICAL: DO NOT MENTION:
+        - AI, artificial intelligence, automation, or technology tools
+        - Building solutions, coding, or tech development
+        - "Journey to darkness" or overly dramatic language
+        - Any reference to using technology to create content
         
         Format your response as JSON:
         {{
-            "main_caption": "detailed caption text with 3-4 sentences",
-            "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7"],
-            "variations": ["detailed variation 1 with 3-4 sentences", "detailed variation 2 with 3-4 sentences"]
+            "main_caption": "detailed caption text with 8-12 sentences including emojis, storytelling, and specific business details",
+            "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7", "#hashtag8", "#hashtag9", "#hashtag10", "#hashtag11", "#hashtag12", "#hashtag13", "#hashtag14", "#hashtag15"],
+            "variations": ["detailed variation 1 with 8-12 sentences", "detailed variation 2 with 8-12 sentences", "detailed variation 3 with 8-12 sentences"]
         }}
         """
     
@@ -139,25 +226,35 @@ class GeminiService:
         {context}
         
         Generate:
-        1. Main tweet (2-3 sentences, under 280 characters total, but use most of the space for maximum impact)
-        2. 6-7 relevant hashtags (mix of trending, industry, and engagement hashtags)
-        3. 2 alternative tweet variations (also 2-3 sentences each)
+        1. Main tweet (2-4 sentences, USE FULL 280 characters for maximum impact and engagement)
+        2. 8-10 relevant hashtags (mix of trending, industry, and engagement hashtags)
+        3. 3 alternative tweet variations (also 2-4 sentences each, utilizing full character limit)
         
         Requirements:
-        - Write 2-3 concise but impactful sentences
-        - Include powerful, action-oriented language
-        - Create urgency or curiosity
-        - Encourage retweets and engagement
-        - Match the brand voice perfectly
-        - Use trending topics strategically
-        - Make it highly shareable
-        - Include a clear value proposition
+        - Write 2-4 concise but highly impactful sentences that use most of the 280 character limit
+        - Include powerful, action-oriented language that drives engagement
+        - Create urgency, curiosity, or strong emotional hooks
+        - Encourage retweets, replies, and meaningful engagement
+        - Match the brand voice perfectly with authentic personality
+        - Use trending topics and current events strategically
+        - Make it highly shareable with quotable, memorable phrases
+        - Include a clear, compelling value proposition or call-to-action
+        - Add conversation starters or thought-provoking questions
+        - Use strategic emojis (2-3) to increase engagement and visual appeal
+        - Include industry insights, tips, or valuable information
+        - Create content that begs for responses and discussion
+        
+        CRITICAL: DO NOT MENTION:
+        - AI, artificial intelligence, automation, or technology tools
+        - Building solutions, coding, or tech development
+        - "Journey to darkness" or overly dramatic language
+        - Any reference to using technology to create content
         
         Format your response as JSON:
         {{
-            "main_tweet": "detailed tweet text with 2-3 sentences",
-            "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7"],
-            "variations": ["detailed variation 1 with 2-3 sentences", "detailed variation 2 with 2-3 sentences"]
+            "main_tweet": "impactful tweet text with 2-4 sentences using full character limit for maximum engagement",
+            "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7", "#hashtag8", "#hashtag9", "#hashtag10"],
+            "variations": ["detailed variation 1 with 2-4 sentences", "detailed variation 2 with 2-4 sentences", "detailed variation 3 with 2-4 sentences"]
         }}
         """
     
@@ -183,6 +280,12 @@ class GeminiService:
         - Share actionable insights or lessons
         - Create thought leadership positioning
         - Use storytelling when appropriate
+        
+        CRITICAL: DO NOT MENTION:
+        - AI, artificial intelligence, automation, or technology tools
+        - Building solutions, coding, or tech development
+        - "Journey to darkness" or overly dramatic language
+        - Any reference to using technology to create content
         
         Format your response as JSON:
         {{
@@ -214,6 +317,12 @@ class GeminiService:
         - Ask engaging questions to drive interaction
         - Create emotional connection with audience
         
+        CRITICAL: DO NOT MENTION:
+        - AI, artificial intelligence, automation, or technology tools
+        - Building solutions, coding, or tech development
+        - "Journey to darkness" or overly dramatic language
+        - Any reference to using technology to create content
+        
         Format your response as JSON:
         {{
             "main_post": "detailed post text with 3-4 sentences",
@@ -244,6 +353,12 @@ class GeminiService:
         - Use viral phrases and current slang appropriately
         - Make it highly shareable and memorable
         
+        CRITICAL: DO NOT MENTION:
+        - AI, artificial intelligence, automation, or technology tools
+        - Building solutions, coding, or tech development
+        - "Journey to darkness" or overly dramatic language
+        - Any reference to using technology to create content
+        
         Format your response as JSON:
         {{
             "main_caption": "detailed caption text with 2-3 sentences",
@@ -255,9 +370,23 @@ class GeminiService:
     def _parse_content_response(self, content: str, platform: str) -> Dict[str, Any]:
         """Parse the AI response and extract structured content."""
         try:
+            # Clean content - remove markdown code blocks
+            cleaned_content = content.strip()
+            
+            # Remove ```json and ``` markers if present
+            if cleaned_content.startswith('```json'):
+                cleaned_content = cleaned_content[7:]
+            elif cleaned_content.startswith('```'):
+                cleaned_content = cleaned_content[3:]
+            
+            if cleaned_content.endswith('```'):
+                cleaned_content = cleaned_content[:-3]
+            
+            cleaned_content = cleaned_content.strip()
+            
             # Try to parse as JSON
-            if content.strip().startswith('{'):
-                data = json.loads(content)
+            if cleaned_content.startswith('{'):
+                data = json.loads(cleaned_content)
                 
                 # Standardize keys based on platform
                 if platform.lower() == 'twitter':
@@ -275,8 +404,8 @@ class GeminiService:
                 }
             else:
                 # Fallback: parse manually
-                lines = content.strip().split('\n')
-                text = lines[0] if lines else content
+                lines = cleaned_content.split('\n')
+                text = lines[0] if lines else cleaned_content
                 return {
                     'text': text,
                     'hashtags': [],
@@ -293,47 +422,86 @@ class GeminiService:
                 'character_count': len(content)
             }
     
+    async def _generate_with_retry(self, prompt: str, max_retries: int = 3) -> str:
+        """Generate content with retry logic and exponential backoff."""
+        for attempt in range(max_retries):
+            try:
+                loop = asyncio.get_event_loop()
+                response = await loop.run_in_executor(
+                    self.executor,
+                    self.model.generate_content,
+                    prompt
+                )
+                
+                if response and response.text and len(response.text.strip()) > 10:
+                    logger.debug(f"AI generation successful on attempt {attempt + 1}")
+                    return response.text.strip()
+                else:
+                    logger.warning(f"Empty or short response on attempt {attempt + 1}")
+                    
+            except Exception as e:
+                logger.warning(f"Generation attempt {attempt + 1} failed: {e}")
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(2 ** attempt)  # Exponential backoff
+                    
+        logger.error("All generation attempts failed")
+        return None
+    
     def _get_fallback_content(self, platform: str, business_name: str, campaign_goal: str) -> Dict[str, Any]:
         """Get fallback content when API fails."""
+        import random
+        import time
+        
+        # Add randomness to make each fallback unique
+        timestamp = int(time.time())
+        random.seed(timestamp + hash(business_name + campaign_goal))
+        
+        # Dynamic content variations
+        action_words = random.choice(['revolutionizing', 'transforming', 'innovating', 'advancing', 'pioneering'])
+        impact_words = random.choice(['incredible', 'amazing', 'outstanding', 'remarkable', 'extraordinary'])
+        future_words = random.choice(['future', 'tomorrow', 'next chapter', 'new era', 'evolution'])
+        emoji_sets = [['🌟', '✨', '💫'], ['🚀', '🔥', '⚡'], ['💡', '🎯', '🏆'], ['🌈', '🎉', '💪']]
+        emojis = random.choice(emoji_sets)
+        
         fallback_content = {
             'instagram': {
-                'text': f"🌟 Exciting news from {business_name}! We're thrilled to share that {campaign_goal} This journey represents everything we've been working toward, and we can't wait to see the impact it will have on our community. Join us as we take this bold step forward and revolutionize the way we serve you. What do you think about this exciting development? 💫",
-                'hashtags': ['#Business', '#Growth', '#Innovation', '#Community', '#Exciting', '#Future', '#Success'],
+                'text': f"{emojis[0]} {impact_words.title()} news from {business_name}! We're {action_words} the way we approach {campaign_goal}. This journey represents months of dedication and innovation, and we're excited to share the results with our community. Join us as we step into the {future_words} and redefine what's possible. What excites you most about this development? {emojis[1]}",
+                'hashtags': ['#Business', '#Growth', '#Innovation', '#Community', f'#{action_words.title()}', f'#{future_words.replace(" ", "")}', '#Success'],
                 'variations': [
-                    f"✨ {business_name} is making incredible moves! Our latest initiative focuses on {campaign_goal} We've put our hearts into this project, and we're confident it will transform how we connect with you. This is just the beginning of an amazing journey together. Ready to be part of something special?",
-                    f"🚀 Big things are happening at {business_name}! We're proud to announce that {campaign_goal} Our team has worked tirelessly to bring you something truly remarkable. This milestone marks a new chapter in our story, and we want you to be part of every moment. Let's make magic happen together!"
+                    f"{emojis[1]} {business_name} is making {impact_words} progress! Our focus on {campaign_goal} represents our commitment to excellence and innovation. We've invested our passion into this project, and we believe it will create meaningful change. This is just the beginning of an exciting journey ahead. Ready to experience something special?",
+                    f"{emojis[2]} Big developments at {business_name}! We're thrilled to share our work on {campaign_goal}. Our team has dedicated countless hours to creating something truly valuable for you. This milestone opens up new possibilities and strengthens our mission. Let's build the {future_words} together!"
                 ]
             },
             'twitter': {
-                'text': f"🎯 Game-changer alert! {business_name} is revolutionizing everything with our focus on {campaign_goal[:150]} This isn't just an update – it's the future happening now. Ready to join the revolution? 🚀",
-                'hashtags': ['#Business', '#Innovation', '#Future', '#Revolutionary', '#GameChanger', '#Success', '#Trending'],
+                'text': f"{emojis[0]} {impact_words.title()} developments! {business_name} is {action_words} our approach to {campaign_goal[:120]}. This represents genuine innovation and commitment to excellence. The {future_words} starts here. Ready to be part of it? {emojis[1]}",
+                'hashtags': ['#Business', '#Innovation', f'#{future_words.replace(" ", "")}', f'#{action_words.title()}', f'#{impact_words.title()}', '#Success', '#Trending'],
                 'variations': [
-                    f"📢 Breaking: {business_name} just announced something incredible! Our mission to {campaign_goal[:120]} is reshaping the industry. This is what innovation looks like. Are you ready for what's next?",
-                    f"🔥 {business_name} is redefining excellence! Our commitment to {campaign_goal[:130]} proves that bold vision creates real change. The future starts today, and we're leading the way."
+                    f"{emojis[1]} Major update: {business_name} unveils {impact_words} progress! Our dedication to {campaign_goal[:100]} is creating real impact in the industry. This is what authentic innovation looks like. What's your take on this development?",
+                    f"{emojis[2]} {business_name} is setting new standards! Our work on {campaign_goal[:110]} demonstrates how vision becomes reality. Bold moves create lasting change. The {future_words} is being written today."
                 ]
             },
             'linkedin': {
-                'text': f"We're excited to share a significant milestone at {business_name}. Our strategic focus on {campaign_goal} represents more than just business evolution – it's our commitment to driving meaningful change in our industry. This initiative reflects months of careful planning, innovative thinking, and dedication to excellence that defines our organization.\n\nAs we embark on this journey, we're not just advancing our mission; we're setting new standards for what's possible. Our team's passion and expertise have brought us to this pivotal moment, and we're confident that the impact will extend far beyond our immediate goals.\n\nWe believe that true success comes from creating value that resonates with our community and drives positive change. This milestone is just the beginning of what we can achieve together.",
-                'hashtags': ['#Business', '#Innovation', '#Professional', '#Leadership', '#Excellence', '#Growth', '#Success'],
+                'text': f"We're pleased to announce {impact_words} progress at {business_name}. Our strategic approach to {campaign_goal} reflects our commitment to {action_words} industry standards and creating meaningful value. This initiative represents extensive research, collaborative planning, and our team's dedication to excellence.\n\nAs we move forward, we're not just advancing our mission – we're establishing new benchmarks for success in our field. Our team's expertise and innovative thinking have positioned us at this pivotal moment, and we're confident the impact will benefit our entire professional community.\n\nWe believe sustainable success comes from creating authentic value and fostering positive industry evolution. This development marks an important step in our continued growth and commitment to professional excellence.",
+                'hashtags': ['#Business', '#Innovation', '#Professional', '#Leadership', '#Excellence', f'#{action_words.title()}', '#Success'],
                 'variations': [
-                    f"At {business_name}, we're proud to announce a transformative step forward in our mission. Our focus on {campaign_goal} demonstrates our unwavering commitment to innovation and excellence. This strategic initiative represents the culmination of extensive research, collaborative planning, and our team's dedication to creating meaningful impact.",
-                    f"Professional milestone: {business_name} is advancing with a groundbreaking approach to {campaign_goal} This initiative showcases our commitment to pushing boundaries and delivering exceptional value. We're excited about the possibilities this opens up for our industry and community."
+                    f"At {business_name}, we're announcing a significant advancement in our professional journey. Our focus on {campaign_goal} demonstrates our commitment to innovation and industry leadership. This strategic initiative combines extensive research with practical application, showcasing our dedication to meaningful impact.",
+                    f"Professional update: {business_name} continues {action_words} our industry with a comprehensive approach to {campaign_goal}. This initiative highlights our commitment to excellence and our vision for creating lasting value in the professional community."
                 ]
             },
             'facebook': {
-                'text': f"Hey everyone! 👋 We have some incredible news to share from the {business_name} family! Our exciting journey toward {campaign_goal} is officially underway, and we couldn't be more thrilled to have you all along for the ride. This project means the world to us because it's all about creating something amazing for our community. We've poured our hearts into this, and we can't wait to show you what we've been working on! What are you most excited to see from us? 💙",
-                'hashtags': ['#Community', '#Family', '#Exciting', '#Journey', '#Together', '#Amazing', '#HeartProject'],
+                'text': f"Hello everyone! {emojis[0]} We have {impact_words} news to share from the {business_name} team! Our journey with {campaign_goal} is gaining momentum, and we're excited to have you be part of this adventure. This project represents our commitment to creating value for our community. We've invested our passion and expertise into this initiative, and we're eager to share the results with you! What aspect interests you most? {emojis[1]}",
+                'hashtags': ['#Community', '#Team', f'#{impact_words.title()}', '#Journey', '#Together', f'#{action_words.title()}', '#Growth'],
                 'variations': [
-                    f"Friends, we're bursting with excitement! 🎉 The amazing team at {business_name} has been working on something really special, and our focus on {campaign_goal} is finally coming to life. This isn't just business for us – it's about creating connections and building something meaningful together with all of you.",
-                    f"Community update! 🌟 We're so grateful to share this journey with all of you as {business_name} takes on the exciting challenge of {campaign_goal} Your support and enthusiasm fuel everything we do, and we can't wait to celebrate this milestone together with our amazing community."
+                    f"Community update! {emojis[1]} The dedicated team at {business_name} has been {action_words} our approach to {campaign_goal}, and we're thrilled to share this progress with you. This represents months of hard work and innovation, and we believe it will create meaningful value for everyone involved.",
+                    f"Friends and supporters! {emojis[2]} We're grateful to share this milestone as {business_name} advances with {campaign_goal}. Your engagement and support inspire everything we do, and we're excited to celebrate this achievement together with our {impact_words} community."
                 ]
             },
             'tiktok': {
-                'text': f"✨ {business_name} just dropped something HUGE! Our mission: {campaign_goal[:80]} This is giving main character energy! 🔥",
-                'hashtags': ['#fyp', '#viral', '#business', '#gamechanging', '#maincharacter', '#energy', '#huge'],
+                'text': f"{emojis[0]} {business_name} just announced something {impact_words}! Our focus: {campaign_goal[:70]}. This energy is unmatched! {emojis[1]}",
+                'hashtags': ['#fyp', '#viral', '#business', f'#{action_words}', f'#{impact_words}', '#energy', '#announcement'],
                 'variations': [
-                    f"🚀 Plot twist: {business_name} is about to change everything! {campaign_goal[:90]} This hits different! 💯",
-                    f"📈 Business glow-up alert! {business_name} said '{campaign_goal[:85]}' and we're here for it! ✨"
+                    f"{emojis[1]} Major moves: {business_name} is {action_words} everything! {campaign_goal[:80]}. The vibes are {impact_words}! {emojis[2]}",
+                    f"{emojis[2]} Success story: {business_name} said '{campaign_goal[:75]}' and delivered! This hits different! {emojis[0]}"
                 ]
             }
         }

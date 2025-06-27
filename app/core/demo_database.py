@@ -2,7 +2,7 @@
 Demo database - in-memory storage for hackathon demo
 """
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import asyncio
 import uuid
 
@@ -24,8 +24,8 @@ class DemoDatabase:
         """Create a new campaign."""
         campaign_id = campaign_data.get('campaign_id', f"demo_{uuid.uuid4().hex[:8]}")
         campaign_data['campaign_id'] = campaign_id
-        campaign_data['created_at'] = datetime.utcnow()
-        campaign_data['updated_at'] = datetime.utcnow()
+        campaign_data['created_at'] = datetime.now(timezone.utc)
+        campaign_data['updated_at'] = datetime.now(timezone.utc)
         
         self.campaigns[campaign_id] = campaign_data
         self.logger.info(f"Created demo campaign: {campaign_id}")
@@ -39,7 +39,7 @@ class DemoDatabase:
         """Update campaign data."""
         if campaign_id in self.campaigns:
             self.campaigns[campaign_id].update(updates)
-            self.campaigns[campaign_id]['updated_at'] = datetime.utcnow()
+            self.campaigns[campaign_id]['updated_at'] = datetime.now(timezone.utc)
             self.logger.info(f"Updated demo campaign: {campaign_id}")
             return True
         return False
@@ -62,7 +62,7 @@ class DemoDatabase:
         for i, agent in enumerate(agent_progress):
             if agent.get('agent_name') == agent_name:
                 agent_progress[i].update(progress_data)
-                agent_progress[i]['updated_at'] = datetime.utcnow()
+                agent_progress[i]['updated_at'] = datetime.now(timezone.utc)
                 updated = True
                 break
         
@@ -70,13 +70,13 @@ class DemoDatabase:
             # Add new agent progress entry
             progress_data.update({
                 'agent_name': agent_name,
-                'created_at': datetime.utcnow(),
-                'updated_at': datetime.utcnow()
+                'created_at': datetime.now(timezone.utc),
+                'updated_at': datetime.now(timezone.utc)
             })
             agent_progress.append(progress_data)
         
         campaign['agent_progress'] = agent_progress
-        campaign['updated_at'] = datetime.utcnow()
+        campaign['updated_at'] = datetime.now(timezone.utc)
         
         self.logger.info(f"Updated agent progress for {agent_name} in campaign {campaign_id}")
         return True

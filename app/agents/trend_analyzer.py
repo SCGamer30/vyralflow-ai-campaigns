@@ -1,5 +1,5 @@
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import asyncio
 
 from app.agents.base_agent import BaseAgent
@@ -94,7 +94,7 @@ class TrendAnalyzerAgent(BaseAgent):
                 'trending_searches': trending_searches,
                 'related_topics': related_topics,
                 'interest_data': interest_data,
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:
@@ -127,7 +127,7 @@ class TrendAnalyzerAgent(BaseAgent):
                 'trending_topics': trending_topics,
                 'engagement_insights': engagement_insights,
                 'top_posts': reddit_posts[:5],  # Include top 5 posts for context
-                'timestamp': datetime.utcnow().isoformat()
+                'timestamp': datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:
@@ -177,7 +177,7 @@ class TrendAnalyzerAgent(BaseAgent):
                 'data_sources': data_sources,
                 'google_trends_data': google_data,
                 'reddit_data': reddit_data,
-                'combination_timestamp': datetime.utcnow().isoformat()
+                'combination_timestamp': datetime.now(timezone.utc).isoformat()
             }
             
         except Exception as e:
@@ -288,7 +288,7 @@ class TrendAnalyzerAgent(BaseAgent):
                     'reddit_data': combined_data.get('reddit_data', {})
                 },
                 'metadata': {
-                    'analysis_timestamp': datetime.utcnow().isoformat(),
+                    'analysis_timestamp': datetime.now(timezone.utc).isoformat(),
                     'agent_version': '1.0.0',
                     'data_sources_count': len(combined_data.get('data_sources', [])),
                     'confidence_score': confidence_score
@@ -421,7 +421,7 @@ class TrendAnalyzerAgent(BaseAgent):
                 'reason': 'Primary trend analysis sources unavailable'
             },
             'metadata': {
-                'analysis_timestamp': datetime.utcnow().isoformat(),
+                'analysis_timestamp': datetime.now(timezone.utc).isoformat(),
                 'agent_version': '1.0.0',
                 'fallback': True,
                 'confidence_score': 0.3

@@ -80,7 +80,7 @@ def create_app():
                 {"agent_name": "visual_designer", "status": "pending", "progress_percentage": 0, "message": "Waiting to start"},
                 {"agent_name": "campaign_scheduler", "status": "pending", "progress_percentage": 0, "message": "Waiting to start"}
             ],
-            "created_at": datetime.utcnow().isoformat()
+            "created_at": datetime.now(datetime.timezone.utc).isoformat()
         }
         
         campaigns[campaign_id] = campaign
@@ -106,7 +106,7 @@ def create_app():
             # Check if all done
             if all(agent["status"] == "completed" for agent in campaign["agent_progress"]):
                 campaign["status"] = "completed"
-                campaign["completed_at"] = datetime.utcnow().isoformat()
+                campaign["completed_at"] = datetime.now(datetime.timezone.utc).isoformat()
         
         return campaign
     

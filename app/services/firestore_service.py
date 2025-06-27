@@ -1,6 +1,6 @@
 from google.cloud import firestore
 from typing import Dict, Any, List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
@@ -33,8 +33,8 @@ class FirestoreService:
             
             campaign_data.update({
                 'campaign_id': campaign_id,
-                'created_at': datetime.utcnow(),
-                'updated_at': datetime.utcnow()
+                'created_at': datetime.now(timezone.utc),
+                'updated_at': datetime.now(timezone.utc)
             })
             
             # Run in executor to avoid blocking
@@ -80,7 +80,7 @@ class FirestoreService:
         try:
             campaign_ref = self.db.collection(settings.firestore_collection_campaigns).document(campaign_id)
             
-            updates['updated_at'] = datetime.utcnow()
+            updates['updated_at'] = datetime.now(timezone.utc)
             
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(
@@ -122,7 +122,7 @@ class FirestoreService:
             for i, agent in enumerate(agent_progress):
                 if agent['agent_name'] == agent_name:
                     agent_progress[i].update(progress_data)
-                    agent_progress[i]['updated_at'] = datetime.utcnow()
+                    agent_progress[i]['updated_at'] = datetime.now(timezone.utc)
                     updated = True
                     break
             
@@ -130,8 +130,8 @@ class FirestoreService:
                 # Add new agent progress entry
                 progress_data.update({
                     'agent_name': agent_name,
-                    'created_at': datetime.utcnow(),
-                    'updated_at': datetime.utcnow()
+                    'created_at': datetime.now(timezone.utc),
+                    'updated_at': datetime.now(timezone.utc)
                 })
                 agent_progress.append(progress_data)
             
@@ -141,7 +141,7 @@ class FirestoreService:
                 campaign_ref.update,
                 {
                     'agent_progress': agent_progress,
-                    'updated_at': datetime.utcnow()
+                    'updated_at': datetime.now(timezone.utc)
                 }
             )
             
