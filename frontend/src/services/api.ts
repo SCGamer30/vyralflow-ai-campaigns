@@ -4,7 +4,9 @@ import type {
   CampaignResults,
 } from "@/types/campaign";
 
-const API_BASE_URL = "http://localhost:8000/api";
+// Use environment variable for API URL, fallback to localhost for development
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 // Helper function for API calls with timeout and better error handling
 async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
@@ -33,30 +35,36 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(`Validation error: ${JSON.stringify(errorData)}`);
       } else {
-        throw new Error(`API call failed: ${response.status} ${response.statusText}`);
+        throw new Error(
+          `API call failed: ${response.status} ${response.statusText}`
+        );
       }
     }
 
     const data = await response.json();
-    
+
     // Basic validation of the response data
     if (data === null || data === undefined) {
       throw new Error("API returned empty response");
     }
-    
+
     return data as T;
   } catch (error) {
     clearTimeout(timeoutId);
-    
+
     // Handle fetch errors
     if (error instanceof Error) {
-      if (error.name === 'AbortError') {
-        throw new Error(`Request timeout: ${endpoint} took longer than 30 seconds`);
-      } else if (error.message.includes('fetch')) {
-        throw new Error(`Network error: Unable to reach server at ${API_BASE_URL}`);
+      if (error.name === "AbortError") {
+        throw new Error(
+          `Request timeout: ${endpoint} took longer than 30 seconds`
+        );
+      } else if (error.message.includes("fetch")) {
+        throw new Error(
+          `Network error: Unable to reach server at ${API_BASE_URL}`
+        );
       }
     }
-    
+
     console.error(`API error for ${endpoint}:`, error);
     throw error;
   }
@@ -78,7 +86,6 @@ export const campaignApi = {
   // Get campaign results
   getResults: (id: string) =>
     apiCall<CampaignResults>(`/campaigns/${id}/results`),
-
 };
 
 // Health check API
