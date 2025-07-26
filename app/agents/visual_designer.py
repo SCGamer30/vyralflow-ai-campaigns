@@ -1225,7 +1225,7 @@ class VisualDesignerAgent(BaseAgent):
     
     async def _get_fallback_visual_design(self, agent_input: AgentInput) -> Dict[str, Any]:
         """Generate fallback visual design when main execution fails."""
-        self.logger.warning("Using fallback visual design")
+        self.logger.warning("Using fallback visual design - generating 6 images")
         
         # Basic visual themes based on industry
         visual_themes = ["professional", "modern", "clean"]
@@ -1237,14 +1237,8 @@ class VisualDesignerAgent(BaseAgent):
         # Basic color palette
         color_palette = ["#2E86C1", "#28B463", "#E74C3C"]
         
-        # Simple image suggestions  
-        image_suggestions = [{
-            "url": "https://images.unsplash.com/photo-1557804506-669a67965ba0",
-            "description": f"Professional image for {agent_input.business_name}",
-            "tags": ["professional", "business"],
-            "photographer": "Unsplash",
-            "source": "fallback"
-        }]
+        # Use the 6-image fallback method instead of 1 image  
+        image_suggestions = self._create_simple_fallback_images(agent_input)
         
         # Basic style recommendations
         style_recommendations = f"Clean and professional design suitable for {agent_input.industry} industry"
