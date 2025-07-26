@@ -177,7 +177,7 @@ export function CampaignCreate() {
 
     try {
       const result = await createCampaign.mutateAsync(formData as CampaignRequest);
-      navigate(`/campaign/${result.campaign_id}`);
+      navigate(`/campaign/${result.campaign_id}/results`);
     } catch (error) {
       console.error("Failed to create campaign:", error);
     }

@@ -180,35 +180,42 @@ class GeminiService:
     def _get_instagram_prompt(self, context: str) -> str:
         """Get Instagram-specific prompt."""
         return f"""
-        Create compelling, detailed Instagram content based on the following information:
+        Create authentic, engaging Instagram content based on the following information:
         
         {context}
         
         Generate:
-        1. Main post caption (8-12 sentences minimum, detailed storytelling approach, engaging and visual-focused, 800-1500 characters)
+        1. Main post caption (8-12 sentences, natural storytelling approach, engaging and visual-focused, 800-1500 characters)
         2. 10-15 highly relevant hashtags (mix of popular, niche, and industry-specific)
         3. 3 alternative caption variations (also 8-12 sentences each)
         
         Requirements:
-        - Write 8-12 full sentences that tell a compelling, detailed story or provide significant value
-        - Use emojis strategically (5-8 per post) for visual appeal and engagement
-        - Include a strong, compelling call-to-action that drives specific action
-        - Create much longer, more engaging content that encourages meaningful interaction
-        - Match the brand voice perfectly with authentic personality
-        - Incorporate trending topics naturally throughout the narrative
-        - Make it feel authentic, human, relatable, and conversational
-        - Focus on benefits, outcomes, emotional connection, and personal experiences
-        - Create curiosity, emotion, anticipation, and desire to engage
-        - Include specific details about the business, campaign, and unique value proposition
-        - Add storytelling elements like personal anecdotes, behind-the-scenes insights, or customer stories
-        - Use conversation starters and questions to encourage comments
-        - Include industry insights, tips, or valuable information
+        - Write naturally like a real person would, not like marketing copy
+        - Use authentic, conversational language that sounds human
+        - Avoid hyperbolic words like "revolutionizing", "transforming", "incredible", "amazing", "game-changing"
+        - Instead use natural expressions like "excited to share", "working on", "proud of", "passionate about"
+        - Share genuine experiences, insights, or behind-the-scenes moments
+        - Use specific, concrete details rather than vague claims
+        - Make it relatable and down-to-earth, not overly promotional
+        - Include honest perspectives and real challenges when appropriate
+        - Focus on the actual value or benefit to customers, not grandiose claims
+        - Use emojis naturally (3-5 per post) where they feel authentic
+        - Include genuine questions that spark real conversations
+        - Match the brand voice while staying authentic and human
         
-        CRITICAL: DO NOT MENTION:
-        - AI, artificial intelligence, automation, or technology tools
-        - Building solutions, coding, or tech development
-        - "Journey to darkness" or overly dramatic language
-        - Any reference to using technology to create content
+        AVOID:
+        - Overusing superlatives (amazing, incredible, revolutionary, game-changing)
+        - Generic marketing speak ("We're thrilled to announce", "Proud to present")
+        - Claims about "revolutionizing" or "transforming" entire industries
+        - Overly dramatic language or artificial enthusiasm
+        - AI, artificial intelligence, automation references
+        - Technical jargon unless it's natural for the industry
+        
+        INSTEAD USE:
+        - Natural expressions like "Here's what we've been working on", "Something we're excited about"
+        - Specific details about the actual product/service/experience
+        - Real customer benefits without exaggeration
+        - Honest, authentic voice that sounds like a real person
         
         Format your response as JSON:
         {{
@@ -221,113 +228,141 @@ class GeminiService:
     def _get_twitter_prompt(self, context: str) -> str:
         """Get Twitter-specific prompt."""
         return f"""
-        Create compelling, detailed Twitter content based on the following information:
+        Create authentic, engaging Twitter content based on the following information:
         
         {context}
         
         Generate:
-        1. Main tweet (2-4 sentences, USE FULL 280 characters for maximum impact and engagement)
+        1. Main tweet (2-4 sentences, use most of the 280 character limit for impact)
         2. 8-10 relevant hashtags (mix of trending, industry, and engagement hashtags)
-        3. 3 alternative tweet variations (also 2-4 sentences each, utilizing full character limit)
+        3. 3 alternative tweet variations (also 2-4 sentences each)
         
         Requirements:
-        - Write 2-4 concise but highly impactful sentences that use most of the 280 character limit
-        - Include powerful, action-oriented language that drives engagement
-        - Create urgency, curiosity, or strong emotional hooks
-        - Encourage retweets, replies, and meaningful engagement
-        - Match the brand voice perfectly with authentic personality
-        - Use trending topics and current events strategically
-        - Make it highly shareable with quotable, memorable phrases
-        - Include a clear, compelling value proposition or call-to-action
-        - Add conversation starters or thought-provoking questions
-        - Use strategic emojis (2-3) to increase engagement and visual appeal
-        - Include industry insights, tips, or valuable information
-        - Create content that begs for responses and discussion
+        - Write naturally like a real person would tweet, not like corporate marketing
+        - Use authentic, conversational language that sounds human
+        - Share genuine insights, observations, or experiences
+        - Avoid hyperbolic words like "revolutionizing", "transforming", "incredible", "game-changing"
+        - Instead use natural expressions like "excited about", "working on", "learned something", "worth sharing"
+        - Make it relatable and authentic, not overly promotional
+        - Include specific, concrete details rather than vague claims
+        - Use emojis naturally (1-3) where they feel authentic
+        - Create genuine conversation starters
+        - Focus on real value or insights, not grandiose claims
+        - Make it shareable because it's genuinely interesting or useful
         
-        CRITICAL: DO NOT MENTION:
-        - AI, artificial intelligence, automation, or technology tools
-        - Building solutions, coding, or tech development
-        - "Journey to darkness" or overly dramatic language
-        - Any reference to using technology to create content
+        AVOID:
+        - Overusing superlatives (amazing, incredible, revolutionary, game-changing)
+        - Generic corporate speak ("We're thrilled to announce", "Proud to unveil")
+        - Claims about "revolutionizing" or "transforming" entire industries
+        - Overly dramatic language or artificial enthusiasm
+        - AI, artificial intelligence, automation references
+        - Technical jargon unless natural for the industry
+        
+        INSTEAD USE:
+        - Natural expressions like "Just tried", "Been thinking about", "Here's what I noticed"
+        - Specific observations or experiences
+        - Real insights without exaggeration
+        - Conversational tone that sounds like a real person
         
         Format your response as JSON:
         {{
-            "main_tweet": "impactful tweet text with 2-4 sentences using full character limit for maximum engagement",
+            "main_tweet": "authentic tweet text with 2-4 sentences using most of the character limit",
             "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7", "#hashtag8", "#hashtag9", "#hashtag10"],
-            "variations": ["detailed variation 1 with 2-4 sentences", "detailed variation 2 with 2-4 sentences", "detailed variation 3 with 2-4 sentences"]
+            "variations": ["authentic variation 1 with 2-4 sentences", "authentic variation 2 with 2-4 sentences", "authentic variation 3 with 2-4 sentences"]
         }}
         """
     
     def _get_linkedin_prompt(self, context: str) -> str:
         """Get LinkedIn-specific prompt."""
         return f"""
-        Create detailed, professional LinkedIn content based on the following information:
+        Create authentic, professional LinkedIn content based on the following information:
         
         {context}
         
         Generate:
-        1. Main post (professional tone, 2-3 full paragraphs with 4-5 sentences each, max 3000 characters)
+        1. Main post (professional but human tone, 2-3 paragraphs with 4-5 sentences each, max 3000 characters)
         2. 6-7 relevant hashtags (professional, industry-focused, and trending business hashtags)
         3. 2 alternative post variations (also 2-3 paragraphs each)
         
         Requirements:
-        - Write 2-3 full paragraphs with substantial content
-        - Professional and authoritative tone with personality
-        - Provide genuine value and insights to professional audience
-        - Include industry trends and business implications
-        - Match the brand voice while maintaining professionalism
-        - Encourage meaningful professional discussion
-        - Share actionable insights or lessons
-        - Create thought leadership positioning
-        - Use storytelling when appropriate
+        - Write professionally but authentically, like a real industry professional would
+        - Use natural, conversational business language, not corporate jargon
+        - Share genuine insights, experiences, or observations from the industry
+        - Avoid hyperbolic words like "revolutionizing", "transforming", "disrupting", "game-changing"
+        - Instead use professional but natural expressions like "developing", "improving", "focused on", "passionate about"
+        - Provide real value through specific insights, lessons learned, or industry observations
+        - Include concrete examples and practical applications
+        - Make it relatable to other professionals in the field
+        - Focus on actual business challenges and solutions
+        - Use storytelling to illustrate points, but keep it grounded and realistic
+        - Encourage meaningful professional discussion with thoughtful questions
         
-        CRITICAL: DO NOT MENTION:
-        - AI, artificial intelligence, automation, or technology tools
-        - Building solutions, coding, or tech development
-        - "Journey to darkness" or overly dramatic language
-        - Any reference to using technology to create content
+        AVOID:
+        - Corporate buzzwords (synergy, leverage, disrupt, paradigm shift)
+        - Grandiose claims about "revolutionizing" entire industries
+        - Generic professional speak ("We're excited to announce", "Proud to share")
+        - Overly promotional language
+        - AI, artificial intelligence, automation references unless directly relevant
+        - Technical jargon unless it's natural for the specific industry
+        
+        INSTEAD USE:
+        - Natural professional language like "Here's what we've learned", "Something worth considering"
+        - Specific industry insights and practical examples
+        - Real challenges and thoughtful approaches
+        - Authentic professional voice that sounds like a real person
         
         Format your response as JSON:
         {{
-            "main_post": "detailed post text with 2-3 full paragraphs",
+            "main_post": "authentic professional post with 2-3 paragraphs",
             "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7"],
-            "variations": ["detailed variation 1 with 2-3 paragraphs", "detailed variation 2 with 2-3 paragraphs"]
+            "variations": ["authentic variation 1 with 2-3 paragraphs", "authentic variation 2 with 2-3 paragraphs"]
         }}
         """
     
     def _get_facebook_prompt(self, context: str) -> str:
         """Get Facebook-specific prompt."""
         return f"""
-        Create engaging, detailed Facebook content based on the following information:
+        Create authentic, community-focused Facebook content based on the following information:
         
         {context}
         
         Generate:
-        1. Main post (conversational, community-focused, 3-4 sentences that create connection)
+        1. Main post (conversational, community-focused, 3-4 sentences that create genuine connection)
         2. 6-7 relevant hashtags (community, industry, and engagement-focused)
         3. 2 alternative post variations (also 3-4 sentences each)
         
         Requirements:
-        - Write 3-4 sentences that feel conversational and authentic
-        - Community-focused and relationship-building tone
-        - Encourage comments, shares, and meaningful discussion
-        - Match the brand voice while being approachable
-        - Build genuine community connection
-        - Include relatable experiences or stories
-        - Ask engaging questions to drive interaction
-        - Create emotional connection with audience
+        - Write like a real person talking to friends and community members
+        - Use warm, conversational language that feels authentic and approachable
+        - Share genuine experiences, stories, or behind-the-scenes moments
+        - Avoid hyperbolic words like "incredible", "amazing", "revolutionizing", "transforming"
+        - Instead use natural expressions like "excited to share", "something we're working on", "proud of"
+        - Focus on building real community connections
+        - Include relatable experiences that others can connect with
+        - Ask genuine questions that spark meaningful conversations
+        - Make it feel personal and authentic, not corporate or promotional
+        - Share specific details that make the story interesting and relatable
+        - Use a tone that's warm, friendly, and inviting
         
-        CRITICAL: DO NOT MENTION:
-        - AI, artificial intelligence, automation, or technology tools
-        - Building solutions, coding, or tech development
-        - "Journey to darkness" or overly dramatic language
-        - Any reference to using technology to create content
+        AVOID:
+        - Corporate marketing speak ("We're thrilled to announce", "Excited to unveil")
+        - Overusing superlatives (amazing, incredible, outstanding, phenomenal)
+        - Claims about "revolutionizing" or "transforming" entire industries
+        - Overly promotional language
+        - AI, artificial intelligence, automation references
+        - Generic enthusiasm that doesn't feel genuine
+        
+        INSTEAD USE:
+        - Natural expressions like "Here's something cool we've been up to", "Wanted to share this with you"
+        - Personal stories and specific experiences
+        - Genuine enthusiasm about real aspects of the business
+        - Conversational tone that feels like talking to a friend
         
         Format your response as JSON:
         {{
-            "main_post": "detailed post text with 3-4 sentences",
+            "main_post": "authentic, conversational post with 3-4 sentences",
             "hashtags": ["#hashtag1", "#hashtag2", "#hashtag3", "#hashtag4", "#hashtag5", "#hashtag6", "#hashtag7"],
-            "variations": ["detailed variation 1 with 3-4 sentences", "detailed variation 2 with 3-4 sentences"]
+            "variations": ["authentic variation 1 with 3-4 sentences", "authentic variation 2 with 3-4 sentences"]
         }}
         """
     
@@ -456,52 +491,52 @@ class GeminiService:
         timestamp = int(time.time())
         random.seed(timestamp + hash(business_name + campaign_goal))
         
-        # Dynamic content variations
-        action_words = random.choice(['revolutionizing', 'transforming', 'innovating', 'advancing', 'pioneering'])
-        impact_words = random.choice(['incredible', 'amazing', 'outstanding', 'remarkable', 'extraordinary'])
-        future_words = random.choice(['future', 'tomorrow', 'next chapter', 'new era', 'evolution'])
-        emoji_sets = [['🌟', '✨', '💫'], ['🚀', '🔥', '⚡'], ['💡', '🎯', '🏆'], ['🌈', '🎉', '💪']]
+        # Natural content variations
+        action_words = random.choice(['working on', 'developing', 'focused on', 'improving', 'building'])
+        impact_words = random.choice(['exciting', 'interesting', 'valuable', 'helpful', 'useful'])
+        future_words = random.choice(['ahead', 'coming up', 'next steps', 'moving forward', 'what\'s next'])
+        emoji_sets = [['✨', '😊'], ['🌱', '💪'], ['📈', '🎯'], ['🤝', '💼']]
         emojis = random.choice(emoji_sets)
         
         fallback_content = {
             'instagram': {
-                'text': f"{emojis[0]} {impact_words.title()} news from {business_name}! We're {action_words} the way we approach {campaign_goal}. This journey represents months of dedication and innovation, and we're excited to share the results with our community. Join us as we step into the {future_words} and redefine what's possible. What excites you most about this development? {emojis[1]}",
-                'hashtags': ['#Business', '#Growth', '#Innovation', '#Community', f'#{action_words.title()}', f'#{future_words.replace(" ", "")}', '#Success'],
+                'text': f"Hey everyone! {emojis[0]} We've been {action_words} something {impact_words} at {business_name} - our approach to {campaign_goal}. It's been a journey of learning and growth, and we're excited to share what we've discovered with our community. There's still more work {future_words}, but we wanted to give you a behind-the-scenes look at what we're passionate about. What questions do you have about this? {emojis[1]}",
+                'hashtags': ['#business', '#growth', '#community', '#passion', '#behindthescenes', '#learning', '#progress'],
                 'variations': [
-                    f"{emojis[1]} {business_name} is making {impact_words} progress! Our focus on {campaign_goal} represents our commitment to excellence and innovation. We've invested our passion into this project, and we believe it will create meaningful change. This is just the beginning of an exciting journey ahead. Ready to experience something special?",
-                    f"{emojis[2]} Big developments at {business_name}! We're thrilled to share our work on {campaign_goal}. Our team has dedicated countless hours to creating something truly valuable for you. This milestone opens up new possibilities and strengthens our mission. Let's build the {future_words} together!"
+                    f"{emojis[1]} Something we've been passionate about at {business_name}: {campaign_goal}. It's been {impact_words} to see how this has evolved, and we're grateful for the support from our community. Every step teaches us something new about what really matters. What's been your experience with this?",
+                    f"Update from the {business_name} team! {emojis[0]} We've been {action_words} {campaign_goal}, and it's been quite the learning experience. There are challenges, but also moments that remind us why we love what we do. Looking forward to sharing more as we continue moving forward."
                 ]
             },
             'twitter': {
-                'text': f"{emojis[0]} {impact_words.title()} developments! {business_name} is {action_words} our approach to {campaign_goal[:120]}. This represents genuine innovation and commitment to excellence. The {future_words} starts here. Ready to be part of it? {emojis[1]}",
-                'hashtags': ['#Business', '#Innovation', f'#{future_words.replace(" ", "")}', f'#{action_words.title()}', f'#{impact_words.title()}', '#Success', '#Trending'],
+                'text': f"Been {action_words} something {impact_words} at {business_name} - our approach to {campaign_goal[:120]}. It's been a learning process, but we're excited about where it's headed. {future_words.title()}, we're hoping to share more insights with the community. What are your thoughts? {emojis[0]}",
+                'hashtags': ['#business', '#learning', '#community', '#insights', '#progress', '#passion', '#growth'],
                 'variations': [
-                    f"{emojis[1]} Major update: {business_name} unveils {impact_words} progress! Our dedication to {campaign_goal[:100]} is creating real impact in the industry. This is what authentic innovation looks like. What's your take on this development?",
-                    f"{emojis[2]} {business_name} is setting new standards! Our work on {campaign_goal[:110]} demonstrates how vision becomes reality. Bold moves create lasting change. The {future_words} is being written today."
+                    f"Quick update from {business_name}: We've been {action_words} {campaign_goal[:100]} and learning a lot along the way. It's {impact_words} to see how each step teaches us something new. What's been your experience with similar challenges?",
+                    f"Something we've been passionate about at {business_name}: {campaign_goal[:110]}. There are ups and downs, but that's what makes it real. Looking forward to sharing more about what we've learned. {emojis[1]}"
                 ]
             },
             'linkedin': {
-                'text': f"We're pleased to announce {impact_words} progress at {business_name}. Our strategic approach to {campaign_goal} reflects our commitment to {action_words} industry standards and creating meaningful value. This initiative represents extensive research, collaborative planning, and our team's dedication to excellence.\n\nAs we move forward, we're not just advancing our mission – we're establishing new benchmarks for success in our field. Our team's expertise and innovative thinking have positioned us at this pivotal moment, and we're confident the impact will benefit our entire professional community.\n\nWe believe sustainable success comes from creating authentic value and fostering positive industry evolution. This development marks an important step in our continued growth and commitment to professional excellence.",
-                'hashtags': ['#Business', '#Innovation', '#Professional', '#Leadership', '#Excellence', f'#{action_words.title()}', '#Success'],
+                'text': f"We've been {action_words} something {impact_words} at {business_name} - our approach to {campaign_goal}. It's been a process of learning, adapting, and discovering what really works in our industry. The journey has taught us valuable lessons about collaboration, patience, and staying focused on what matters most to our clients.\n\nWhat we've found particularly rewarding is how this work has brought our team together and helped us better understand the challenges our customers face. Each step forward has been earned through honest effort and genuine commitment to improvement.\n\nLooking {future_words}, we're excited to continue this work and share what we learn along the way. The real measure of success isn't just in what we achieve, but in how we can help others in our industry grow as well.",
+                'hashtags': ['#business', '#learning', '#teamwork', '#growth', '#industry', '#collaboration', '#progress'],
                 'variations': [
-                    f"At {business_name}, we're announcing a significant advancement in our professional journey. Our focus on {campaign_goal} demonstrates our commitment to innovation and industry leadership. This strategic initiative combines extensive research with practical application, showcasing our dedication to meaningful impact.",
-                    f"Professional update: {business_name} continues {action_words} our industry with a comprehensive approach to {campaign_goal}. This initiative highlights our commitment to excellence and our vision for creating lasting value in the professional community."
+                    f"Here's what we've been {action_words} at {business_name}: {campaign_goal}. It's been an {impact_words} learning experience that's taught us a lot about our industry and ourselves. The process has been as valuable as the outcomes, and we're grateful for the insights gained along the way.",
+                    f"Professional update from {business_name}: Our focus on {campaign_goal} has been both challenging and rewarding. We've learned that sustainable progress comes from consistent effort, honest evaluation, and staying connected to what our industry really needs."
                 ]
             },
             'facebook': {
-                'text': f"Hello everyone! {emojis[0]} We have {impact_words} news to share from the {business_name} team! Our journey with {campaign_goal} is gaining momentum, and we're excited to have you be part of this adventure. This project represents our commitment to creating value for our community. We've invested our passion and expertise into this initiative, and we're eager to share the results with you! What aspect interests you most? {emojis[1]}",
-                'hashtags': ['#Community', '#Team', f'#{impact_words.title()}', '#Journey', '#Together', f'#{action_words.title()}', '#Growth'],
+                'text': f"Hey everyone! {emojis[0]} Wanted to share something we've been {action_words} at {business_name} - our approach to {campaign_goal}. It's been quite the journey, with lots of learning moments and a few surprises along the way. We're grateful for this community and the support you've shown us. What's been your experience with similar challenges? {emojis[1]}",
+                'hashtags': ['#community', '#learning', '#grateful', '#journey', '#support', '#growth', '#teamwork'],
                 'variations': [
-                    f"Community update! {emojis[1]} The dedicated team at {business_name} has been {action_words} our approach to {campaign_goal}, and we're thrilled to share this progress with you. This represents months of hard work and innovation, and we believe it will create meaningful value for everyone involved.",
-                    f"Friends and supporters! {emojis[2]} We're grateful to share this milestone as {business_name} advances with {campaign_goal}. Your engagement and support inspire everything we do, and we're excited to celebrate this achievement together with our {impact_words} community."
+                    f"Quick update from our team! {emojis[1]} We've been {action_words} {campaign_goal}, and it's been both challenging and rewarding. There are days when everything clicks, and others when we're back to the drawing board - but that's what makes it real. Thanks for being part of this journey with us.",
+                    f"Something we wanted to share with our community: We've been passionate about {campaign_goal} at {business_name}, and while it's not always easy, it's been {impact_words} to see how much we've learned. Your encouragement means more than you know! {emojis[0]}"
                 ]
             },
             'tiktok': {
-                'text': f"{emojis[0]} {business_name} just announced something {impact_words}! Our focus: {campaign_goal[:70]}. This energy is unmatched! {emojis[1]}",
-                'hashtags': ['#fyp', '#viral', '#business', f'#{action_words}', f'#{impact_words}', '#energy', '#announcement'],
+                'text': f"POV: {action_words} something {impact_words} at {business_name} {emojis[0]} Our focus: {campaign_goal[:70]}. The process has been wild but worth it! {emojis[1]}",
+                'hashtags': ['#fyp', '#business', '#learning', '#process', '#growth', '#passionate', '#real'],
                 'variations': [
-                    f"{emojis[1]} Major moves: {business_name} is {action_words} everything! {campaign_goal[:80]}. The vibes are {impact_words}! {emojis[2]}",
-                    f"{emojis[2]} Success story: {business_name} said '{campaign_goal[:75]}' and delivered! This hits different! {emojis[0]}"
+                    f"When you're {action_words} {campaign_goal[:80]} and it's actually {impact_words} {emojis[1]} The {business_name} journey continues!",
+                    f"That feeling when you're passionate about {campaign_goal[:75]} at {business_name} {emojis[0]} It's been a process but we're here for it!"
                 ]
             }
         }

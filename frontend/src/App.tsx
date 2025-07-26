@@ -4,6 +4,7 @@ import { LandingPage } from "@/pages/LandingPage";
 import { CampaignCreate } from "@/pages/CampaignCreate";
 import { CampaignDashboard } from "@/pages/CampaignDashboard";
 import { CampaignResults } from "@/pages/CampaignResults";
+import ImageSearch from "@/pages/ImageSearch";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -25,6 +26,7 @@ function App() {
             <Route path="/create" element={<CampaignCreate />} />
             <Route path="/campaign/:id" element={<CampaignDashboard />} />
             <Route path="/campaign/:id/results" element={<CampaignResults />} />
+            <Route path="/images" element={<ImageSearch />} />
           </Routes>
         </div>
       </Router>

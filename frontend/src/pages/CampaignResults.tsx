@@ -11,8 +11,9 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import { Sparkles as SparklesComponent } from "@/components/ui/sparkles";
-import { useCampaignResults } from "@/hooks/useCampaign";
+import { useCampaignResults, useCampaignStatus } from "@/hooks/useCampaign";
 import {
   ArrowLeft,
   Instagram,
@@ -24,6 +25,11 @@ import {
   Copy,
   Check,
   BarChart3,
+  Brain,
+  Wand2,
+  Target,
+  Calendar,
+  Loader2,
 } from "lucide-react";
 
 const platformIcons = {
@@ -36,8 +42,13 @@ const platformIcons = {
 export function CampaignResults() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: results, isLoading, error } = useCampaignResults(id);
+  const { data: status, isLoading: statusLoading } = useCampaignStatus(id);
+  const { data: results, isLoading: resultsLoading, error } = useCampaignResults(id);
   const [copiedText, setCopiedText] = useState<string | null>(null);
+
+  const isProcessing = status?.status === "processing";
+  const isCompleted = status?.status === "completed";
+  const shouldShowResults = isCompleted && results;
 
   const handleCopyContent = (text: string, platform: string) => {
     navigator.clipboard.writeText(text);
@@ -45,12 +56,155 @@ export function CampaignResults() {
     setTimeout(() => setCopiedText(null), 2000);
   };
 
-  if (isLoading) {
+  // Show loading/processing state
+  if (statusLoading || isProcessing || (!shouldShowResults && !error)) {
+    const agents = [
+      { name: "Trend Analyzer", icon: Brain, description: "Analyzing market trends and insights" },
+      { name: "Content Writer", icon: Wand2, description: "Crafting engaging social media content" },
+      { name: "Visual Designer", icon: Target, description: "Selecting perfect images and visuals" },
+      { name: "Campaign Scheduler", icon: Calendar, description: "Optimizing posting times and schedule" },
+    ];
+
+    const getAgentProgress = (agentName: string) => {
+      if (!status?.agent_progress) return { status: 'pending', progress: 0 };
+      const agent = status.agent_progress.find(a => 
+        a.agent_name.toLowerCase().replace('_', ' ') === agentName.toLowerCase()
+      );
+      return agent || { status: 'pending', progress: 0 };
+    };
+
+    const completedAgents = status?.agent_progress?.filter(a => a.status === 'completed').length || 0;
+    const totalProgress = (completedAgents / 4) * 100;
+
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <BarChart3 className="h-12 w-12 animate-pulse text-purple-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading campaign results...</p>
+      <div className="min-h-screen bg-slate-950 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950" />
+        <SparklesComponent 
+          className="opacity-40" 
+          particleColor="#f472b6" 
+          particleCount={50}
+        />
+        
+        <div className="relative z-10 container mx-auto px-4 py-12">
+          <div className="max-w-4xl mx-auto">
+            {/* Header */}
+            <div className="text-center mb-12">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="mb-6"
+              >
+                <div className="relative">
+                  <Loader2 className="h-16 w-16 text-purple-500 animate-spin mx-auto" />
+                  <div className="absolute inset-0 bg-purple-500/20 rounded-full blur-xl"></div>
+                </div>
+              </motion.div>
+              
+              <motion.h1
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-4xl font-bold text-white mb-4"
+              >
+                Creating Your Campaign
+              </motion.h1>
+              
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-xl text-gray-300 mb-8"
+              >
+                Our AI agents are working together to create the perfect social media campaign
+              </motion.p>
+
+              {/* Overall Progress */}
+              <div className="max-w-md mx-auto mb-8">
+                <div className="flex justify-between text-sm text-gray-400 mb-2">
+                  <span>Overall Progress</span>
+                  <span>{Math.round(totalProgress)}%</span>
+                </div>
+                <Progress value={totalProgress} className="h-2" />
+              </div>
+            </div>
+
+            {/* Agent Progress Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {agents.map((agent, index) => {
+                const agentProgress = getAgentProgress(agent.name);
+                const isActive = agentProgress.status === 'processing';
+                const isCompleted = agentProgress.status === 'completed';
+                
+                return (
+                  <motion.div
+                    key={agent.name}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 + index * 0.1 }}
+                  >
+                    <Card className={`relative overflow-hidden transition-all duration-300 ${
+                      isActive ? 'border-purple-500 bg-purple-950/20' : 
+                      isCompleted ? 'border-green-500 bg-green-950/20' : 
+                      'border-gray-700 bg-gray-900/50'
+                    }`}>
+                      <CardContent className="p-6">
+                        <div className="flex items-center space-x-4">
+                          <div className={`p-3 rounded-full transition-colors ${
+                            isActive ? 'bg-purple-500/20 text-purple-400' :
+                            isCompleted ? 'bg-green-500/20 text-green-400' :
+                            'bg-gray-500/20 text-gray-400'
+                          }`}>
+                            {isActive ? (
+                              <Loader2 className="h-6 w-6 animate-spin" />
+                            ) : isCompleted ? (
+                              <Check className="h-6 w-6" />
+                            ) : (
+                              <agent.icon className="h-6 w-6" />
+                            )}
+                          </div>
+                          
+                          <div className="flex-1">
+                            <h3 className="text-lg font-semibold text-white">
+                              {agent.name}
+                            </h3>
+                            <p className="text-sm text-gray-400 mb-2">
+                              {agent.description}
+                            </p>
+                            
+                            <div className="flex items-center space-x-2">
+                              <Badge 
+                                variant={isCompleted ? 'default' : isActive ? 'secondary' : 'outline'}
+                                className={
+                                  isCompleted ? 'bg-green-500 text-white' :
+                                  isActive ? 'bg-purple-500 text-white' :
+                                  'text-gray-400'
+                                }
+                              >
+                                {isCompleted ? 'Completed' : isActive ? 'Processing...' : 'Waiting'}
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Processing Message */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.8 }}
+              className="text-center mt-12"
+            >
+              <p className="text-gray-400">
+                This usually takes 2-3 minutes. Please stay on this page while we work our magic! ✨
+              </p>
+            </motion.div>
+          </div>
         </div>
       </div>
     );

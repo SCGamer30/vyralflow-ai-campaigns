@@ -11,7 +11,7 @@ from app.core.config import settings
 from app.core.database import db_manager
 from app.core.exceptions import VyralflowException
 from app.core.google_auth import setup_google_auth
-from app.api.routes import campaigns, health, agents
+from app.api.routes import campaigns, health, agents, images
 from app.utils.logging import setup_logging, get_logger
 from app.services.unsplash_service import unsplash_service
 
@@ -152,6 +152,10 @@ app = FastAPI(
             "name": "agents",
             "description": "AI agent status and information endpoints",
         },
+        {
+            "name": "Images",
+            "description": "Image search and management using Unsplash API",
+        },
     ],
     contact={
         "name": "Vyralflow AI Support",
@@ -290,6 +294,12 @@ app.include_router(
 
 app.include_router(
     agents.router,
+    prefix=settings.api_v1_prefix,
+    dependencies=[]
+)
+
+app.include_router(
+    images.router,
     prefix=settings.api_v1_prefix,
     dependencies=[]
 )

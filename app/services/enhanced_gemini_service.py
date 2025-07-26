@@ -413,11 +413,11 @@ class EnhancedGeminiService:
     def _fallback_base_content(self, context: ContentGenerationContext) -> Dict[str, Any]:
         """Fallback base content"""
         return {
-            "text": f"🚀 {context.business_name} is revolutionizing {context.industry}! {context.campaign_goal}",
-            "hashtags": [f"#{context.industry.lower()}", "#innovation", "#business"],
-            "content_pillars": ["innovation", "growth"],
-            "engagement_tactics": ["storytelling"],
-            "viral_elements": ["trending topics"]
+            "text": f"Hey everyone! We're excited to share something amazing at {context.business_name} - {context.campaign_goal}. Our team has been working hard to bring you the best experience, and we're grateful for all your support along the way. ✨",
+            "hashtags": [f"#{context.industry.lower()}", "#passionate", "#community", "#learning", "#growth"],
+            "content_pillars": ["authenticity", "community"],
+            "engagement_tactics": ["genuine conversation"],
+            "viral_elements": ["relatable content"]
         }
     
     def _fallback_instagram_stories(self, context: ContentGenerationContext) -> List[InstagramStorySlide]:
