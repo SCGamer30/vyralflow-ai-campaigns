@@ -39,32 +39,25 @@ class VisualDesignerAgent(BaseAgent):
             raise ValueError("Invalid input data for visual design")
         
         try:
-            # Step 1: Analyze campaign context for visual themes
-            await self._update_step_progress(1, 4, "Analyzing campaign context")
+            # Step 1: Analyze visual context
+            await self._update_step_progress(1, 3, "Analyzing visual context")
             visual_themes = await self._analyze_visual_context(agent_input)
             
-            # Step 2: Generate color palette (use AI-powered method with fallback)
-            await self._update_step_progress(2, 4, "Generating color palette")
-            color_palette = await self._generate_color_palette(agent_input, visual_themes)
-            
-            # Step 3: Search for relevant images (use Unsplash API)
-            await self._update_step_progress(3, 4, "Finding image suggestions")
+            # Step 2: Search for relevant images (use Unsplash API)
+            await self._update_step_progress(2, 3, "Finding image suggestions")
             raw_image_suggestions = await self._get_image_suggestions(agent_input, visual_themes)
             
             # Convert to proper ImageSuggestion format and ensure exactly 6 images
             image_suggestions = self._format_image_suggestions(raw_image_suggestions, agent_input)
             
-            # Step 4: Create visual style recommendations
-            await self._update_step_progress(4, 4, "Creating style recommendations")
-            style_recommendations = await self._create_style_recommendations(
-                agent_input, visual_themes, color_palette
-            )
+            # Step 3: Create visual style recommendations
+            await self._update_step_progress(3, 3, "Creating style recommendations")
+            style_recommendations = f"Clean and professional design suitable for {agent_input.industry} industry"
             
             # Compile final visual result as a dictionary
             visual_result = {
                 "recommended_style": style_recommendations,
                 "image_suggestions": image_suggestions,
-                "color_palette": color_palette,
                 "visual_themes": visual_themes
             }
             
@@ -75,13 +68,17 @@ class VisualDesignerAgent(BaseAgent):
                     'design_timestamp': datetime.now(timezone.utc).isoformat(),
                     'images_found': len(image_suggestions),
                     'themes_generated': len(visual_themes),
-                    'colors_suggested': len(color_palette),
                     'agent_version': '1.0.0'
                 }
             }
             
         except Exception as e:
-            self.logger.error(f"Visual design failed: {e}")
+            self.logger.error(f"❌ Visual design MAIN EXECUTION failed: {e}")
+            self.logger.error(f"❌ Error type: {type(e).__name__}")
+            import traceback
+            self.logger.error(f"❌ Full traceback: {traceback.format_exc()}")
+            
+            self.logger.warning("🔄 Falling back to contextual visual design")
             return await self._get_fallback_visual_design(agent_input)
     
     async def _analyze_visual_context(self, agent_input: AgentInput) -> List[str]:
@@ -953,24 +950,126 @@ class VisualDesignerAgent(BaseAgent):
             return muted_variants.get(hex_color, hex_color)
     
     def _create_simple_fallback_images(self, agent_input: AgentInput) -> List[Dict[str, Any]]:
-        """Create 6 simple placeholder images as a guaranteed fallback."""
-        colors = ['4F46E5', '059669', 'DC2626', 'EA580C', '7C3AED', '0F766E']
-        themes = ['Workspace', 'Team', 'Innovation', 'Growth', 'Success', 'Professional']
+        """Create 6 contextual fallback images based on the business industry."""
+        
+        # Generate contextual image data based on industry
+        if "food" in agent_input.industry.lower() or "beverage" in agent_input.industry.lower() or "coffee" in agent_input.business_name.lower():
+            # Coffee/Food & Beverage specific images
+            image_data = [
+                {
+                    'theme': 'Coffee Beans',
+                    'url': 'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#8B4513'
+                },
+                {
+                    'theme': 'Barista at Work', 
+                    'url': 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#D2691E'
+                },
+                {
+                    'theme': 'Coffee Shop Interior',
+                    'url': 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&h=600&fit=crop&auto=format&q=80', 
+                    'color': '#CD853F'
+                },
+                {
+                    'theme': 'Latte Art',
+                    'url': 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#F5DEB3'
+                },
+                {
+                    'theme': 'Coffee Culture',
+                    'url': 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#A0522D'
+                },
+                {
+                    'theme': 'Artisan Coffee',
+                    'url': 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#8B4513'
+                }
+            ]
+        elif "tech" in agent_input.industry.lower():
+            # Technology specific images
+            image_data = [
+                {
+                    'theme': 'Code Development',
+                    'url': 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#0000FF'
+                },
+                {
+                    'theme': 'Tech Innovation',
+                    'url': 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#00CED1'
+                },
+                {
+                    'theme': 'Digital Interface',
+                    'url': 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#4169E1'
+                },
+                {
+                    'theme': 'Tech Team',
+                    'url': 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#1E90FF'
+                },
+                {
+                    'theme': 'Data Analytics',
+                    'url': 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#6495ED'
+                },
+                {
+                    'theme': 'Innovation Lab',
+                    'url': 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#0066CC'
+                }
+            ]
+        else:
+            # Generic professional images for other industries
+            image_data = [
+                {
+                    'theme': 'Professional Workspace',
+                    'url': 'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#4F46E5'
+                },
+                {
+                    'theme': 'Team Collaboration', 
+                    'url': 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#059669'
+                },
+                {
+                    'theme': 'Business Growth',
+                    'url': 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop&auto=format&q=80', 
+                    'color': '#DC2626'
+                },
+                {
+                    'theme': 'Professional Meeting',
+                    'url': 'https://images.unsplash.com/photo-1553484771-cc0d9b8c2b33?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#EA580C'
+                },
+                {
+                    'theme': 'Business Success',
+                    'url': 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#7C3AED'
+                },
+                {
+                    'theme': 'Professional Service',
+                    'url': 'https://images.unsplash.com/photo-1556761175-b413da4baf72?w=800&h=600&fit=crop&auto=format&q=80',
+                    'color': '#0F766E'
+                }
+            ]
         
         images = []
-        for i in range(6):
+        for i, data in enumerate(image_data):
             image = {
-                'id': f'fallback_{i+1}',
-                'url': f'https://via.placeholder.com/800x600/{colors[i]}/ffffff?text={themes[i]}',
-                'description': f'{themes[i]} - {agent_input.industry} imagery for {agent_input.business_name}',
-                'tags': [agent_input.industry, 'business', themes[i].lower()],
-                'photographer': 'VyralFlow AI',
-                'source': 'placeholder',
-                'unsplash_url': f'https://via.placeholder.com/800x600/{colors[i]}/ffffff?text={themes[i]}',
-                'small_url': f'https://via.placeholder.com/400x300/{colors[i]}/ffffff?text={themes[i]}',
+                'id': f'contextual_{i+1}',
+                'url': data['url'],
+                'description': f'{data["theme"]} - {agent_input.industry} imagery for {agent_input.business_name}',
+                'tags': [agent_input.industry, data['theme'].lower().replace(' ', '_')],
+                'photographer': 'Unsplash Stock',
+                'source': 'contextual_fallback',
+                'unsplash_url': data['url'],
+                'small_url': data['url'].replace('w=800&h=600', 'w=400&h=300'),
                 'photographer_url': '#',
                 'likes': 100 + i * 50,
-                'color': f'#{colors[i]}',
+                'color': data['color'],
                 'width': 800,
                 'height': 600
             }
@@ -989,6 +1088,7 @@ class VisualDesignerAgent(BaseAgent):
             
             # Try to use the real Unsplash service if available
             try:
+                self.logger.info(f"🔍 Attempting Unsplash search for {agent_input.business_name}")
                 image_suggestions = await unsplash_service.get_photo_suggestions(
                     business_name=agent_input.business_name,
                     industry=agent_input.industry,
@@ -1002,19 +1102,21 @@ class VisualDesignerAgent(BaseAgent):
                     # Ensure we have exactly 6 images
                     if len(image_suggestions) < 6:
                         fallback_count = 6 - len(image_suggestions)
-                        fallback_images = self._create_simple_fallback_images(agent_input)
-                        image_suggestions.extend(fallback_images[:fallback_count])
+                        contextual_fallback = self._create_simple_fallback_images(agent_input)
+                        image_suggestions.extend(contextual_fallback[:fallback_count])
+                        self.logger.info(f"🔄 Added {fallback_count} contextual fallback images")
                     
                     return image_suggestions[:6]
                 else:
+                    self.logger.warning("❌ Unsplash returned no images, using contextual fallback")
                     raise Exception("No images returned from Unsplash")
                     
             except Exception as unsplash_error:
-                self.logger.warning(f"Unsplash API failed: {unsplash_error}")
+                self.logger.error(f"❌ Unsplash API failed: {unsplash_error}")
                 
-                # Use simple fallback images
+                # Use contextual fallback images
                 fallback_images = self._create_simple_fallback_images(agent_input)
-                self.logger.info(f"🔄 Using simple fallback: generated {len(fallback_images)} placeholder images")
+                self.logger.info(f"🔄 Using contextual fallback: generated {len(fallback_images)} {agent_input.industry} images")
                 return fallback_images
                 
         except Exception as e:
@@ -1234,9 +1336,6 @@ class VisualDesignerAgent(BaseAgent):
         elif agent_input.industry.lower() in ["tech", "technology"]:
             visual_themes = ["innovative", "futuristic", "sleek"]
         
-        # Basic color palette
-        color_palette = ["#2E86C1", "#28B463", "#E74C3C"]
-        
         # Use the 6-image fallback method instead of 1 image  
         image_suggestions = self._create_simple_fallback_images(agent_input)
         
@@ -1247,14 +1346,12 @@ class VisualDesignerAgent(BaseAgent):
             'visuals': {
                 "recommended_style": style_recommendations,
                 "image_suggestions": image_suggestions,
-                "color_palette": color_palette,
                 "visual_themes": visual_themes
             },
             'metadata': {
                 'design_timestamp': datetime.now(timezone.utc).isoformat(),
                 'images_found': len(image_suggestions),
                 'themes_generated': len(visual_themes),
-                'colors_suggested': len(color_palette),
                 'agent_version': '1.0.0',
                 'fallback_mode': True
             }

@@ -172,7 +172,6 @@ class VisualResult(BaseModel):
     
     recommended_style: str = Field(default="")
     image_suggestions: List[ImageSuggestion] = Field(default_factory=list)
-    color_palette: List[str] = Field(default_factory=list)
     visual_themes: List[str] = Field(default_factory=list)
 
 
