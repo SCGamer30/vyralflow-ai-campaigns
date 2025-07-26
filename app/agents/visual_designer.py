@@ -280,79 +280,11 @@ class VisualDesignerAgent(BaseAgent):
         agent_input: AgentInput,
         visual_themes: List[str]
     ) -> List[Dict[str, Any]]:
-        """Get reliable image suggestions with working URLs."""
-        import random
-        import hashlib
-        
-        # Create deterministic but varied suggestions
-        business_seed = hashlib.md5(agent_input.business_name.encode()).hexdigest()
-        random.seed(int(business_seed[:8], 16))
-        
-        # Industry-specific image categories
-        industry_categories = {
-            'food & beverage': ['food', 'restaurant', 'cooking', 'ingredients', 'dining', 'chef', 'kitchen', 'coffee'],
-            'technology': ['technology', 'computer', 'software', 'digital', 'innovation', 'startup', 'coding', 'tech'],
-            'retail': ['shopping', 'store', 'products', 'fashion', 'lifestyle', 'customer', 'retail', 'brand'],
-            'healthcare': ['health', 'medical', 'wellness', 'doctor', 'hospital', 'care', 'fitness', 'healthy'],
-            'finance': ['business', 'finance', 'money', 'banking', 'investment', 'professional', 'office', 'growth'],
-            'education': ['education', 'learning', 'student', 'school', 'knowledge', 'teaching', 'books', 'study'],
-            'real estate': ['house', 'home', 'property', 'architecture', 'building', 'interior', 'real-estate', 'modern'],
-            'automotive': ['car', 'automotive', 'vehicle', 'transport', 'road', 'driving', 'auto', 'mechanic']
-        }
-        
-        # Get industry keywords
-        industry_key = agent_input.industry.lower()
-        keywords = industry_categories.get(industry_key, ['business', 'professional', 'modern', 'success'])
-        
-        # Generate image suggestions with working URLs from Unsplash (no API key required)
-        image_suggestions = []
-        
-        for i in range(12):
-            keyword = random.choice(keywords)
-            image_id = random.randint(100, 9999)
-            
-            # Create varied image suggestions
-            suggestion = {
-                "id": f"img_{business_seed[:8]}_{i}",
-                "url": f"https://images.unsplash.com/photo-1{image_id}{random.randint(10000000, 99999999)}?w=800&h=600&fit=crop&crop=center",
-                "description": f"Professional {keyword} image for {agent_input.business_name}",
-                "alt_description": f"{keyword.title()} visual for {agent_input.campaign_goal}",
-                "photographer": f"Professional Photographer {random.randint(1, 100)}",
-                "photographer_url": f"https://unsplash.com/@photographer{random.randint(1, 100)}",
-                "likes": random.randint(50, 1000),
-                "width": 800,
-                "height": 600,
-                "color": random.choice(['#4A90E2', '#50C878', '#E74C3C', '#F39C12', '#9B59B6', '#1ABC9C']),
-                "tags": [keyword, agent_input.industry, "professional", "business"],
-                "relevance_score": random.uniform(0.8, 1.0),
-                "category": keyword
-            }
-            
-            image_suggestions.append(suggestion)
-        
-        # Use working placeholder images instead
-        placeholder_images = [
-            {
-                "id": f"placeholder_{i}",
-                "url": f"https://picsum.photos/800/600?random={hash(agent_input.business_name + str(i)) % 1000}",
-                "description": f"Professional {random.choice(keywords)} image for {agent_input.business_name}",
-                "alt_description": f"Visual content for {agent_input.campaign_goal}",
-                "photographer": "Professional Stock",
-                "photographer_url": "https://picsum.photos",
-                "likes": random.randint(100, 500),
-                "width": 800,
-                "height": 600,
-                "color": random.choice(['#4A90E2', '#50C878', '#E74C3C', '#F39C12', '#9B59B6', '#1ABC9C']),
-                "tags": [random.choice(keywords), agent_input.industry, "business"],
-                "relevance_score": random.uniform(0.7, 0.9),
-                "category": random.choice(keywords)
-            }
-            for i in range(8)
-        ]
-        
-        self.logger.info(f"Generated {len(placeholder_images)} reliable image suggestions for {agent_input.business_name}")
-        return placeholder_images
-    
+        """DEPRECATED: This method is no longer used. Use _get_image_suggestions instead."""
+        # Redirect to the new method
+        import asyncio
+        return asyncio.create_task(self._get_image_suggestions(agent_input, visual_themes))
+
     async def _generate_ai_color_palette(
         self,
         agent_input: AgentInput,
@@ -1022,145 +954,163 @@ class VisualDesignerAgent(BaseAgent):
         agent_input: AgentInput,
         visual_themes: List[str]
     ) -> List[Dict[str, Any]]:
-        """Get diverse image suggestions from Unsplash API with guaranteed 6+ real images."""
+        """Get 6 diverse, curated image suggestions using real Unsplash API with AI-generated queries."""
         try:
-            self.logger.info(f"🖼️ Getting Unsplash images for {agent_input.business_name}")
+            self.logger.info(f"🖼️ Generating curated image suggestions for {agent_input.business_name}")
             
-            # Use direct search for more reliable results - we'll get better images this way
-            search_query = f"{agent_input.industry} business professional"
-            photos = await unsplash_service.search_photos(
-                query=search_query,
-                per_page=12
+            # Use the real Unsplash service with AI-powered search queries
+            image_suggestions = await unsplash_service.get_photo_suggestions(
+                business_name=agent_input.business_name,
+                industry=agent_input.industry,
+                campaign_goal=agent_input.campaign_goal,
+                visual_themes=visual_themes
             )
             
-            self.logger.info(f"✅ Unsplash API returned {len(photos)} photos for query: {search_query}")
-            
-            # If first search doesn't work, try alternatives
-            if not photos or len(photos) < 3:
-                self.logger.warning("❌ Not enough photos from first search, trying alternative queries")
+            if image_suggestions and len(image_suggestions) >= 6:
+                self.logger.info(f"✅ Successfully retrieved {len(image_suggestions)} curated images from Unsplash API")
+                return image_suggestions[:6]  # Ensure exactly 6 images
+            else:
+                self.logger.warning(f"⚠️ Unsplash API returned {len(image_suggestions) if image_suggestions else 0} images, using enhanced fallback")
                 
-                alternative_queries = [
-                    agent_input.industry,
-                    "business professional modern",
-                    f"{agent_input.business_name} business",
-                    "professional office workspace"
-                ]
+                # Enhanced fallback with diverse, professional images
+                fallback_images = self._get_enhanced_fallback_images(agent_input, visual_themes)
+                return fallback_images
                 
-                for alt_query in alternative_queries:
-                    if len(photos) >= 6:
-                        break
-                    
-                    alt_photos = await unsplash_service.search_photos(
-                        query=alt_query,
-                        per_page=8
-                    )
-                    
-                    # Add unique photos
-                    existing_ids = {p.get('id') for p in photos}
-                    for photo in alt_photos:
-                        if photo.get('id') not in existing_ids:
-                            photos.append(photo)
-                    
-                    self.logger.info(f"Added {len(alt_photos)} photos from query: {alt_query}, total: {len(photos)}")
-            
-            # Convert to format expected by frontend
-            image_suggestions = []
-            
-            for i, photo in enumerate(photos[:15]):  # Process up to 15 to ensure we get 6+ good ones
-                # Ensure we have valid image data
-                if not photo.get('id') or not photo.get('urls', {}).get('regular'):
-                    self.logger.warning(f"❌ Skipping invalid photo at index {i}")
-                    continue
-                
-                # Get proper photographer URL
-                photographer_url = photo.get('user', {}).get('links', {}).get('html', 'https://unsplash.com')
-                if not photographer_url.startswith('http'):
-                    photographer_url = f"https://unsplash.com/@{photo.get('user', {}).get('username', 'photographer')}"
-                
-                # Format image data with proper structure
-                suggestion = {
-                    "id": photo.get('id'),
-                    "url": photo.get('urls', {}).get('regular', ''),
-                    "unsplash_url": photo.get('urls', {}).get('regular', ''),  # Alternative field name
-                    "description": photo.get('description') or photo.get('alt_description', '') or f"Professional {agent_input.industry} image",
-                    "alt_description": photo.get('alt_description') or photo.get('description', '') or f"Visual content for {agent_input.business_name}",
-                    "photographer": photo.get('user', {}).get('name', 'Unsplash Photographer'),
-                    "photographer_url": photographer_url,
-                    "likes": photo.get('likes', 0),
-                    "width": photo.get('width', 800),
-                    "height": photo.get('height', 600),
-                    "color": photo.get('color', '#CCCCCC'),
-                    "tags": [tag.get('title', '') for tag in photo.get('tags', []) if tag.get('title')],
-                    "relevance_score": photo.get('relevance_score', 0.8),
-                    "source": "unsplash_api"
-                }
-                
-                # Validate that we have a working URL
-                if suggestion["url"] and 'unsplash.com' in suggestion["url"]:
-                    image_suggestions.append(suggestion)
-                    self.logger.debug(f"✅ Added valid Unsplash image {i+1}: {suggestion['id']} - {suggestion['description'][:50]}...")
-                else:
-                    self.logger.warning(f"❌ Invalid URL for photo {photo.get('id', 'unknown')}: {suggestion['url']}")
-            
-            final_count = len(image_suggestions)
-            self.logger.info(f"🎯 Successfully prepared {final_count} Unsplash images for {agent_input.business_name}")
-            
-            # Ensure we have at least 6 images - this is critical!
-            if final_count < 6:
-                self.logger.warning(f"⚠️ Only got {final_count} images, need at least 6. Adding reliable working images...")
-                reliable_images = self._get_reliable_working_images(agent_input, final_count)
-                image_suggestions.extend(reliable_images)
-                final_count = len(image_suggestions)
-                self.logger.info(f"📷 Now have {final_count} total images after adding reliable fallbacks")
-            
-            if final_count == 0:
-                self.logger.error("❌ Failed to get any valid images, using enhanced fallback")
-                return self._get_enhanced_fallback_images(agent_input)
-            
-            # Return exactly what the frontend expects - at least 6 images
-            final_images = image_suggestions[:12]  # Return up to 12 images
-            self.logger.info(f"🚀 Returning {len(final_images)} images to Visual Designer - SUCCESS!")
-            return final_images
-            
         except Exception as e:
-            self.logger.error(f"❌ Failed to get image suggestions from Unsplash: {e}")
-            import traceback
-            traceback.print_exc()
-            return self._get_enhanced_fallback_images(agent_input)
-    
-    def _get_enhanced_fallback_images(self, agent_input: AgentInput) -> List[Dict[str, Any]]:
-        """Get enhanced fallback images with multiple reliable sources - ensure 6+ images."""
+            self.logger.error(f"❌ Image suggestions failed: {e}")
+            
+            # Use enhanced fallback when everything else fails
+            fallback_images = self._get_enhanced_fallback_images(agent_input, visual_themes)
+            self.logger.info(f"🔄 Using enhanced fallback: generated {len(fallback_images)} diverse images")
+            return fallback_images
+
+    def _get_enhanced_fallback_images(
+        self,
+        agent_input: AgentInput,
+        visual_themes: List[str]
+    ) -> List[Dict[str, Any]]:
+        """Generate 6 diverse, high-quality fallback images when API fails."""
         import random
         import hashlib
+        import time
         
-        business_seed = hashlib.md5(agent_input.business_name.encode()).hexdigest()[:8]
+        # Create deterministic but varied suggestions using business context
+        business_seed = hashlib.md5(agent_input.business_name.encode()).hexdigest()
+        time_seed = int(time.time() / 3600)  # Changes every hour for variety
+        random.seed(int(business_seed[:8], 16) + time_seed)
         
-        # Ensure we always return at least 6 images
-        fallback_suggestions = []
+        # Industry-specific image themes for professional variety
+        industry_themes = {
+            'food & beverage': [
+                ('modern-restaurant-interior', 'Modern Restaurant Interior', '3D4A5C'),
+                ('fresh-ingredients-display', 'Fresh Ingredients Display', '2ECC71'),
+                ('professional-chef-cooking', 'Professional Chef Cooking', 'E74C3C'),
+                ('cozy-cafe-atmosphere', 'Cozy Cafe Atmosphere', 'F39C12'),
+                ('artisan-food-plating', 'Artisan Food Plating', '9B59B6'),
+                ('coffee-brewing-process', 'Coffee Brewing Process', '34495E')
+            ],
+            'technology': [
+                ('modern-tech-office', 'Modern Tech Office', '3498DB'),
+                ('software-development-team', 'Software Development Team', '2ECC71'),
+                ('innovative-workspace', 'Innovative Workspace', 'E74C3C'),
+                ('digital-collaboration', 'Digital Collaboration', 'F39C12'),
+                ('tech-startup-energy', 'Tech Startup Energy', '9B59B6'),
+                ('ai-innovation-concept', 'AI Innovation Concept', '1ABC9C')
+            ],
+            'retail': [
+                ('modern-store-interior', 'Modern Store Interior', '3498DB'),
+                ('shopping-experience', 'Shopping Experience', '2ECC71'),
+                ('product-showcase', 'Product Showcase', 'E74C3C'),
+                ('boutique-elegance', 'Boutique Elegance', 'F39C12'),
+                ('retail-customer-service', 'Retail Customer Service', '9B59B6'),
+                ('brand-display-modern', 'Brand Display Modern', '34495E')
+            ],
+            'healthcare': [
+                ('modern-medical-office', 'Modern Medical Office', '3498DB'),
+                ('healthcare-consultation', 'Healthcare Consultation', '2ECC71'),
+                ('wellness-lifestyle', 'Wellness Lifestyle', 'E74C3C'),
+                ('medical-technology', 'Medical Technology', 'F39C12'),
+                ('fitness-wellness-center', 'Fitness Wellness Center', '9B59B6'),
+                ('health-professional-team', 'Health Professional Team', '1ABC9C')
+            ],
+            'finance': [
+                ('professional-business-meeting', 'Professional Business Meeting', '2C3E50'),
+                ('financial-consultation', 'Financial Consultation', '27AE60'),
+                ('modern-banking-interior', 'Modern Banking Interior', '3498DB'),
+                ('business-growth-concept', 'Business Growth Concept', 'F39C12'),
+                ('investment-advisory', 'Investment Advisory', '9B59B6'),
+                ('financial-success-lifestyle', 'Financial Success Lifestyle', '1ABC9C')
+            ],
+            'education': [
+                ('modern-learning-environment', 'Modern Learning Environment', '3498DB'),
+                ('online-education-setup', 'Online Education Setup', '2ECC71'),
+                ('professional-training', 'Professional Training', 'E74C3C'),
+                ('knowledge-resources', 'Knowledge Resources', 'F39C12'),
+                ('student-success', 'Student Success', '9B59B6'),
+                ('innovative-classroom', 'Innovative Classroom', '34495E')
+            ],
+            'real estate': [
+                ('luxury-home-interior', 'Luxury Home Interior', '2C3E50'),
+                ('real-estate-consultation', 'Real Estate Consultation', '27AE60'),
+                ('modern-property-exterior', 'Modern Property Exterior', '3498DB'),
+                ('elegant-living-space', 'Elegant Living Space', 'F39C12'),
+                ('property-showcase', 'Property Showcase', '9B59B6'),
+                ('architectural-design', 'Architectural Design', '1ABC9C')
+            ],
+            'automotive': [
+                ('modern-car-showroom', 'Modern Car Showroom', '2C3E50'),
+                ('automotive-innovation', 'Automotive Innovation', '27AE60'),
+                ('professional-auto-service', 'Professional Auto Service', '3498DB'),
+                ('luxury-vehicle-interior', 'Luxury Vehicle Interior', 'F39C12'),
+                ('automotive-technology', 'Automotive Technology', '9B59B6'),
+                ('dealership-professional', 'Dealership Professional', '34495E')
+            ]
+        }
         
-        # Create 8 different fallback images to ensure variety
-        for i in range(8):
-            suggestion = {
-                "id": f"enhanced_fallback_{i+1}_{business_seed}",
-                "url": f'https://source.unsplash.com/800x600/?{agent_input.industry},business,professional&sig={hash(agent_input.business_name + str(i)) % 10000}',
-                "unsplash_url": f'https://source.unsplash.com/800x600/?{agent_input.industry},business,professional&sig={hash(agent_input.business_name + str(i)) % 10000}',
-                "description": f'Professional {agent_input.industry} image {i+1} for {agent_input.business_name}',
-                "alt_description": f'High-quality {agent_input.industry} business visual {i+1}',
-                "photographer": f'Professional Stock {i+1}',
-                "photographer_url": 'https://unsplash.com',
-                "likes": random.randint(100, 800),
-                "width": 800,
-                "height": 600,
-                "color": random.choice(['#4a90e2', '#50c878', '#e74c3c', '#f39c12', '#9b59b6', '#1abc9c']),
-                "tags": [agent_input.industry, 'business', 'professional', f'image{i+1}'],
-                "relevance_score": random.uniform(0.7, 0.9),
-                "source": "enhanced_fallback"
-            }
+        # Get industry-specific themes or use generic business themes
+        industry_key = agent_input.industry.lower()
+        themes = industry_themes.get(industry_key, [
+            ('professional-workspace', 'Professional Workspace', '3498DB'),
+            ('business-meeting-modern', 'Business Meeting Modern', '2ECC71'),
+            ('office-collaboration', 'Office Collaboration', 'E74C3C'),
+            ('team-success-concept', 'Team Success Concept', 'F39C12'),
+            ('innovation-lifestyle', 'Innovation Lifestyle', '9B59B6'),
+            ('corporate-professional', 'Corporate Professional', '34495E')
+        ])
+        
+        # Generate 6 diverse fallback images
+        fallback_images = []
+        selected_themes = random.sample(themes, min(6, len(themes)))
+        
+        for i, (theme_key, theme_title, color) in enumerate(selected_themes):
+            # Create varied dimensions for visual interest
+            dimensions = [(800, 600), (1000, 700), (900, 650), (850, 625)]
+            width, height = random.choice(dimensions)
             
-            fallback_suggestions.append(suggestion)
+            image = {
+                'id': f'fallback_{agent_input.business_name.lower().replace(" ", "_")}_{theme_key}_{i}',
+                'description': f'{theme_title} - Professional {agent_input.industry} imagery for {agent_input.business_name}',
+                'url': f'https://via.placeholder.com/{width}x{height}/{color}/ffffff?text={theme_title.replace(" ", "+")}',
+                'unsplash_url': f'https://via.placeholder.com/{width}x{height}/{color}/ffffff?text={theme_title.replace(" ", "+")}',
+                'small_url': f'https://via.placeholder.com/400x300/{color}/ffffff?text={theme_title.replace(" ", "+")}',
+                'thumb_url': f'https://via.placeholder.com/200x150/{color}/ffffff?text={theme_title.replace(" ", "+")}',
+                'photographer': 'VyralFlow AI',
+                'photographer_username': 'vyralflow_ai',
+                'photographer_url': '#',
+                'likes': random.randint(100, 800),
+                'color': f'#{color}',
+                'width': width,
+                'height': height,
+                'quality_score': random.randint(3, 5),
+                'search_query': f'{agent_input.industry} {theme_title.lower()}',
+                'is_fallback': True
+            }
+            fallback_images.append(image)
         
-        self.logger.warning(f"⚠️ Using {len(fallback_suggestions)} enhanced fallback image suggestions")
-        return fallback_suggestions
+        # Shuffle for variety while maintaining quality
+        random.shuffle(fallback_images)
+        
+        return fallback_images[:6]
     
     
     def _get_reliable_working_images(
@@ -1168,70 +1118,9 @@ class VisualDesignerAgent(BaseAgent):
         agent_input: AgentInput,
         existing_count: int
     ) -> List[Dict[str, Any]]:
-        """Get reliable working images that are guaranteed to load."""
-        import random
-        import hashlib
-        import time
-        
-        # Create deterministic but varied suggestions
-        business_seed = hashlib.md5(agent_input.business_name.encode()).hexdigest()
-        # Add timestamp to ensure variety across sessions
-        time_seed = int(time.time() / 3600)  # Change every hour
-        random.seed(int(business_seed[:8], 16) + time_seed)
-        
-        # Industry-specific image categories
-        industry_categories = {
-            'food & beverage': ['coffee', 'food', 'restaurant', 'cooking', 'dining'],
-            'technology': ['technology', 'computer', 'startup', 'innovation', 'digital'],
-            'retail': ['shopping', 'store', 'fashion', 'business', 'retail'],
-            'healthcare': ['health', 'medical', 'wellness', 'fitness', 'care'],
-            'finance': ['business', 'finance', 'professional', 'office', 'growth'],
-            'education': ['education', 'learning', 'books', 'study', 'knowledge'],
-            'real estate': ['house', 'home', 'architecture', 'building', 'interior'],
-            'automotive': ['car', 'automotive', 'transport', 'vehicle', 'modern']
-        }
-        
-        # Get industry keywords
-        industry_key = agent_input.industry.lower()
-        keywords = industry_categories.get(industry_key, ['business', 'professional', 'modern'])
-        
-        # Generate working images with varied sources
-        working_images = []
-        needed_count = max(6 - existing_count, 6)  # Ensure we always reach at least 6 total images
-        
-        for i in range(needed_count):
-            keyword = random.choice(keywords)
-            # Use multiple reliable image services
-            image_services = [
-                f"https://source.unsplash.com/800x600/?{keyword},business,professional&sig={hash(agent_input.business_name + str(i)) % 10000}",
-                f"https://picsum.photos/800/600?random={hash(agent_input.business_name + keyword + str(i)) % 10000}",
-                f"https://source.unsplash.com/featured/800x600/?{keyword}&sig={hash(agent_input.business_name + str(i + 100)) % 10000}"
-            ]
-            
-            image_url = random.choice(image_services)
-            suggestion = {
-                "id": f"working_{business_seed[:6]}_{i}",
-                "url": image_url,
-                "unsplash_url": image_url,  # Alternative field name for consistency
-                "description": f"Professional {keyword} image for {agent_input.business_name} - {agent_input.campaign_goal}",
-                "alt_description": f"High-quality {keyword} visual for {agent_input.industry} business",
-                "photographer": f"Stock Photography",
-                "photographer_url": "https://unsplash.com",
-                "likes": random.randint(150, 800),
-                "width": 800,
-                "height": 600,
-                "color": random.choice(['#2E86C1', '#28B463', '#E74C3C', '#F39C12', '#8E44AD', '#17A2B8']),
-                "tags": [keyword, agent_input.industry, "professional", "high-quality"],
-                "relevance_score": random.uniform(0.8, 0.95),
-                "category": keyword,
-                "source": "reliable_fallback"
-            }
-            
-            working_images.append(suggestion)
-        
-        self.logger.info(f"📷 Generated {len(working_images)} reliable working images for {agent_input.business_name}")
-        
-        return working_images
+        """DEPRECATED: This method is no longer used. Use _get_enhanced_fallback_images instead."""
+        # Redirect to the new method
+        return self._get_enhanced_fallback_images(agent_input, [])
     
     async def _get_fallback_visual_design(self, agent_input: AgentInput) -> Dict[str, Any]:
         """Generate fallback visual design when main execution fails."""

@@ -2,6 +2,7 @@ import httpx
 from typing import List, Dict, Any, Optional
 import asyncio
 from urllib.parse import urlencode
+import random
 
 from app.core.config import settings
 from app.core.exceptions import ExternalAPIException
@@ -11,7 +12,7 @@ logger = get_logger(__name__)
 
 
 class UnsplashService:
-    """Service for Unsplash API interactions."""
+    """Service for Unsplash API interactions with AI-powered search query generation."""
     
     def __init__(self):
         """Initialize Unsplash service."""
@@ -20,6 +21,147 @@ class UnsplashService:
         self.client = httpx.AsyncClient(timeout=30.0)
         logger.info("Unsplash service initialized successfully")
     
+    async def generate_ai_search_queries(
+        self,
+        business_name: str,
+        industry: str,
+        campaign_goal: str,
+        visual_themes: Optional[List[str]] = None
+    ) -> List[str]:
+        """Generate diverse, AI-powered search queries using Gemini."""
+        try:
+            # Import here to avoid circular imports
+            from app.services.gemini_service import gemini_service
+            
+            # Create a comprehensive prompt for generating diverse search queries
+            themes_text = f" with themes: {', '.join(visual_themes)}" if visual_themes else ""
+            
+            prompt = f"""
+            Generate 6 diverse, creative search queries for finding professional images on Unsplash for:
+            - Business: {business_name}
+            - Industry: {industry}
+            - Campaign Goal: {campaign_goal}{themes_text}
+            
+            Requirements:
+            - Each query should target different visual aspects (workspace, products, people, concepts, lifestyle, branding)
+            - Use descriptive, visual keywords that photographers typically use
+            - Avoid generic terms, be specific and evocative
+            - Include lighting, mood, and style descriptors
+            - Make queries suitable for professional marketing materials
+            
+            Format: Return exactly 6 queries, one per line, no numbering or bullets.
+            
+            Examples of good queries:
+            - "modern coffee shop interior warm lighting"
+            - "professional team collaboration bright office"
+            - "minimalist product photography clean background"
+            """
+            
+            response = await gemini_service.generate_content(prompt)
+            
+            # Parse the response and clean up queries
+            queries = []
+            for line in response.strip().split('\n'):
+                query = line.strip()
+                # Remove any numbering, bullets, or extra formatting
+                query = query.lstrip('1234567890.-• ').strip()
+                if query and len(query) > 5:  # Ensure meaningful queries
+                    queries.append(query)
+            
+            # Ensure we have exactly 6 queries
+            if len(queries) < 6:
+                # Add fallback queries based on industry
+                fallback_queries = self._get_fallback_queries(business_name, industry, campaign_goal)
+                queries.extend(fallback_queries[:6-len(queries)])
+            
+            # Take only first 6 queries
+            final_queries = queries[:6]
+            
+            logger.info(f"Generated {len(final_queries)} AI search queries: {final_queries}")
+            return final_queries
+            
+        except Exception as e:
+            logger.warning(f"AI query generation failed, using fallback: {e}")
+            return self._get_fallback_queries(business_name, industry, campaign_goal)
+    
+    def _get_fallback_queries(self, business_name: str, industry: str, campaign_goal: str) -> List[str]:
+        """Generate fallback search queries when AI generation fails."""
+        industry_queries = {
+            'food & beverage': [
+                'modern restaurant interior warm lighting',
+                'fresh ingredients food photography',
+                'professional chef cooking kitchen',
+                'cozy cafe atmosphere customers',
+                'artisan food plating elegant',
+                'coffee beans close up texture'
+            ],
+            'technology': [
+                'modern tech office space clean',
+                'software developer coding laptop',
+                'innovative technology concept digital',
+                'professional team meeting bright',
+                'minimalist workspace setup modern',
+                'tech startup collaboration energy'
+            ],
+            'retail': [
+                'modern retail store interior bright',
+                'shopping experience lifestyle customers',
+                'product display professional lighting',
+                'boutique fashion store elegant',
+                'retail business owner portrait',
+                'brand showcase modern design'
+            ],
+            'healthcare': [
+                'modern medical office clean bright',
+                'healthcare professional consultation',
+                'wellness lifestyle healthy living',
+                'medical technology innovation',
+                'fitness wellness center modern',
+                'health care team professional'
+            ],
+            'finance': [
+                'professional business meeting modern',
+                'financial planning consultation office',
+                'modern banking interior clean',
+                'business growth concept upward',
+                'professional advisor client meeting',
+                'financial success lifestyle modern'
+            ],
+            'education': [
+                'modern classroom learning environment',
+                'online education technology setup',
+                'professional training session bright',
+                'educational resources books knowledge',
+                'student success learning achievement',
+                'innovative learning space modern'
+            ],
+            'real estate': [
+                'modern home interior design luxury',
+                'real estate agent professional meeting',
+                'beautiful property architecture exterior',
+                'luxury living room staging bright',
+                'professional property showcase',
+                'modern residential architecture clean'
+            ],
+            'automotive': [
+                'modern car showroom professional',
+                'automotive technology innovation',
+                'professional mechanic service clean',
+                'luxury vehicle interior detail',
+                'automotive business professional team',
+                'modern auto dealership bright'
+            ]
+        }
+        
+        return industry_queries.get(industry.lower(), [
+            f'{industry} business professional modern',
+            f'{business_name} workspace bright clean',
+            f'professional {industry} team collaboration',
+            f'modern {industry} office interior',
+            f'{industry} innovation technology concept',
+            f'successful {industry} business lifestyle'
+        ])
+
     async def search_photos(
         self,
         query: str,
@@ -52,19 +194,19 @@ class UnsplashService:
             for photo in photos:
                 formatted_photo = {
                     'id': photo.get('id'),
-                    'description': photo.get('description') or photo.get('alt_description', ''),
-                    'urls': {
-                        'small': photo.get('urls', {}).get('small'),
-                        'regular': photo.get('urls', {}).get('regular'),
-                        'full': photo.get('urls', {}).get('full')
-                    },
-                    'user': {
-                        'name': photo.get('user', {}).get('name'),
-                        'username': photo.get('user', {}).get('username'),
-                        'profile_url': photo.get('user', {}).get('links', {}).get('html')
-                    },
+                    'description': photo.get('description') or photo.get('alt_description', f'Professional {query} image'),
+                    'url': photo.get('urls', {}).get('regular'),
+                    'unsplash_url': photo.get('urls', {}).get('regular'),
+                    'small_url': photo.get('urls', {}).get('small'),
+                    'thumb_url': photo.get('urls', {}).get('thumb'),
+                    'full_url': photo.get('urls', {}).get('full'),
+                    'photographer': photo.get('user', {}).get('name'),
+                    'photographer_username': photo.get('user', {}).get('username'),
+                    'photographer_url': photo.get('user', {}).get('links', {}).get('html'),
                     'likes': photo.get('likes', 0),
                     'color': photo.get('color'),
+                    'width': photo.get('width', 0),
+                    'height': photo.get('height', 0),
                     'tags': [tag.get('title') for tag in photo.get('tags', [])],
                     'download_url': photo.get('links', {}).get('download')
                 }
@@ -83,7 +225,7 @@ class UnsplashService:
         except Exception as e:
             logger.error(f"Failed to search Unsplash photos: {e}")
             return self._get_fallback_photos(query, per_page)
-    
+
     async def get_photo_suggestions(
         self,
         business_name: str,
@@ -91,181 +233,58 @@ class UnsplashService:
         campaign_goal: str,
         visual_themes: Optional[List[str]] = None
     ) -> List[Dict[str, Any]]:
-        """Get photo suggestions based on campaign context."""
+        """Get AI-curated photo suggestions based on campaign context."""
         try:
-            # Generate search queries based on context
-            search_queries = self._generate_search_queries(
+            # Generate diverse AI-powered search queries
+            search_queries = await self.generate_ai_search_queries(
                 business_name, industry, campaign_goal, visual_themes
             )
             
             all_photos = []
             
-            # Search for photos using different queries
-            for query in search_queries[:3]:  # Limit to 3 queries to avoid rate limits
-                photos = await self.search_photos(query, per_page=5)
-                all_photos.extend(photos)
-                
-                # Add small delay between requests
-                await asyncio.sleep(0.5)
+            # Search for photos using AI-generated queries
+            for i, query in enumerate(search_queries):
+                try:
+                    photos = await self.search_photos(query, per_page=2)  # Get 2 per query for variety
+                    if photos:
+                        # Add query context to photos for better tracking
+                        for photo in photos:
+                            photo['search_query'] = query
+                            photo['query_index'] = i
+                        all_photos.extend(photos)
+                    
+                    # Add small delay between requests to be respectful to API
+                    await asyncio.sleep(0.3)
+                    
+                except Exception as e:
+                    logger.warning(f"Search failed for query '{query}': {e}")
+                    continue
             
-            # Remove duplicates and sort by relevance
+            # Remove duplicates and ensure variety
             unique_photos = self._deduplicate_photos(all_photos)
             
-            # Score and sort photos
+            # Score and sort photos for quality and relevance
             scored_photos = self._score_photos(unique_photos, search_queries)
             
-            return scored_photos[:15]  # Return top 15
+            # Ensure we have exactly 6 high-quality images
+            final_photos = scored_photos[:6]
+            
+            # If we don't have enough, fill with high-quality fallbacks
+            if len(final_photos) < 6:
+                fallback_photos = self._get_diverse_fallback_photos(
+                    business_name, industry, 6 - len(final_photos)
+                )
+                final_photos.extend(fallback_photos)
+            
+            logger.info(f"Generated {len(final_photos)} curated photo suggestions for {business_name}")
+            return final_photos[:6]  # Always return exactly 6
             
         except Exception as e:
             logger.error(f"Failed to get photo suggestions: {e}")
-            return self._get_fallback_photo_suggestions(industry, campaign_goal)
-    
-    def _generate_search_queries(
-        self,
-        business_name: str,
-        industry: str,
-        campaign_goal: str,
-        visual_themes: Optional[List[str]] = None
-    ) -> List[str]:
-        """Generate search queries for photo suggestions."""
-        queries = []
-        
-        # Dynamic industry-based queries for variety
-        import random
-        import time
-        
-        # Create unique seed for different results each time
-        seed = hash(f"{business_name}_{campaign_goal}_{int(time.time() / 3600)}")
-        random.seed(seed)
-        
-        industry_keyword_options = {
-            'food & beverage': [
-                ['coffee beans', 'espresso cup', 'cafe interior', 'coffee brewing'],
-                ['fresh coffee', 'coffee shop', 'barista', 'coffee roasting'],
-                ['coffee mug', 'latte art', 'coffee culture', 'artisan coffee'],
-                ['organic coffee', 'coffee plantation', 'coffee grinder', 'specialty coffee']
-            ],
-            'technology': [
-                ['modern office', 'tech startup', 'computer setup', 'digital workspace'],
-                ['laptop coding', 'software development', 'tech innovation', 'programmer'],
-                ['tech meeting', 'digital transformation', 'modern technology', 'innovation hub']
-            ],
-            'retail': [
-                ['modern store', 'shopping experience', 'retail display', 'boutique interior'],
-                ['product showcase', 'customer shopping', 'retail business', 'store front'],
-                ['brand display', 'shopping lifestyle', 'retail design', 'commerce']
-            ],
-            'healthcare': [
-                ['healthcare', 'medical', 'wellness', 'health professional'],
-                ['clinic', 'fitness', 'health', 'medical technology'],
-                ['wellness center', 'care', 'treatment', 'healthy lifestyle']
-            ],
-            'finance': [
-                ['finance', 'business', 'investment', 'financial'],
-                ['banking', 'money', 'professional', 'wealth'],
-                ['financial planning', 'growth', 'success', 'advisor']
-            ],
-            'education': [
-                ['education', 'learning', 'student', 'academic'],
-                ['classroom', 'books', 'study', 'knowledge'],
-                ['online learning', 'teaching', 'school', 'educational']
-            ],
-            'real estate': [
-                ['real estate', 'property', 'home', 'house'],
-                ['architecture', 'building', 'residential', 'commercial'],
-                ['luxury', 'modern home', 'interior', 'design']
-            ],
-            'automotive': [
-                ['automotive', 'cars', 'vehicles', 'transportation'],
-                ['driving', 'auto', 'car dealership', 'modern car'],
-                ['electric vehicle', 'innovation', 'automotive design', 'performance']
-            ]
-        }
-        
-        # Create business-specific queries first
-        business_type_keywords = []
-        business_lower = business_name.lower()
-        
-        # Detect business type from name for more targeted searches
-        if any(word in business_lower for word in ['cafe', 'coffee', 'espresso', 'brew']):
-            business_type_keywords = ['coffee shop interior', 'coffee beans close up', 'espresso machine']
-        elif any(word in business_lower for word in ['restaurant', 'bistro', 'eatery']):
-            business_type_keywords = ['restaurant interior', 'food plating', 'dining experience']
-        elif any(word in business_lower for word in ['bakery', 'pastry', 'bread']):
-            business_type_keywords = ['fresh bread', 'bakery interior', 'artisan pastry']
-        elif any(word in business_lower for word in ['tech', 'software', 'app', 'digital']):
-            business_type_keywords = ['modern office space', 'tech workspace', 'software development']
-        elif any(word in business_lower for word in ['boutique', 'fashion', 'style']):
-            business_type_keywords = ['boutique interior', 'fashion display', 'clothing store']
-        
-        # Add business-specific queries if detected
-        if business_type_keywords:
-            queries.extend(business_type_keywords[:2])
-        
-        # Select random keyword sets for variety
-        industry_options = industry_keyword_options.get(industry.lower(), [['business', 'professional']])
-        selected_option = random.choice(industry_options)
-        queries.extend(selected_option[:2])
-        
-        # Dynamic campaign goal-based queries
-        goal_keywords = {
-            'promote': ['marketing', 'promotion', 'advertising', 'brand visibility'],
-            'launch': ['product launch', 'new business', 'startup', 'innovation'],
-            'sale': ['sale', 'discount', 'shopping', 'special offer'],
-            'awareness': ['brand awareness', 'visibility', 'recognition', 'outreach'],
-            'growth': ['business growth', 'expansion', 'success', 'development'],
-            'engagement': ['community', 'social media', 'interaction', 'connection']
-        }
-        
-        # Find matching goal keywords
-        goal_matches = []
-        for key, keywords in goal_keywords.items():
-            if key in campaign_goal.lower():
-                goal_matches.extend(keywords)
-        
-        if goal_matches:
-            queries.append(random.choice(goal_matches))
-        else:
-            queries.append(random.choice(['business success', 'professional growth', 'innovation']))
-        
-        # Enhanced visual theme queries
-        if visual_themes:
-            theme_variations = {
-                'modern': ['modern', 'contemporary', 'sleek', 'minimalist'],
-                'professional': ['professional', 'corporate', 'business', 'formal'],
-                'creative': ['creative', 'artistic', 'innovative', 'unique'],
-                'energetic': ['energetic', 'dynamic', 'vibrant', 'active'],
-                'warm': ['warm', 'cozy', 'friendly', 'welcoming'],
-                'luxurious': ['luxury', 'premium', 'elegant', 'sophisticated']
-            }
-            
-            for theme in visual_themes[:2]:
-                theme_key = theme.lower()
-                if theme_key in theme_variations:
-                    selected_variation = random.choice(theme_variations[theme_key])
-                    if selected_variation.lower() not in [q.lower() for q in queries]:
-                        queries.append(selected_variation)
-                elif theme.lower() not in [q.lower() for q in queries]:
-                    queries.append(theme)
-        
-        # Dynamic general business queries
-        general_options = [
-            ['professional business', 'corporate success', 'business meeting'],
-            ['modern workspace', 'office environment', 'workplace'],
-            ['team collaboration', 'teamwork', 'business team'],
-            ['success', 'achievement', 'growth'],
-            ['innovation', 'future', 'progress']
-        ]
-        
-        selected_general = random.choice(general_options)
-        queries.extend(selected_general[:1])  # Add one general query
-        
-        # Ensure we have enough unique queries
-        unique_queries = list(dict.fromkeys(queries))  # Remove duplicates while preserving order
-        return unique_queries[:6]  # Limit to 6 queries
-    
+            return self._get_diverse_fallback_photos(business_name, industry, 6)
+
     def _deduplicate_photos(self, photos: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-        """Remove duplicate photos."""
+        """Remove duplicate photos based on ID."""
         seen_ids = set()
         unique_photos = []
         
@@ -276,109 +295,120 @@ class UnsplashService:
                 unique_photos.append(photo)
         
         return unique_photos
-    
-    def _score_photos(
-        self,
-        photos: List[Dict[str, Any]],
-        search_queries: List[str]
-    ) -> List[Dict[str, Any]]:
-        """Score photos based on relevance and quality."""
+
+    def _score_photos(self, photos: List[Dict[str, Any]], queries: List[str]) -> List[Dict[str, Any]]:
+        """Score photos based on quality metrics and sort by relevance."""
+        scored_photos = []
+        
         for photo in photos:
             score = 0
             
-            # Quality and popularity score
-            likes = photo.get('likes', 0)
-            if likes > 5000:
-                score += 5  # Very popular
-            elif likes > 1000:
-                score += 4
-            elif likes > 500:
+            # Higher resolution gets better score
+            width = photo.get('width', 0)
+            height = photo.get('height', 0)
+            if width > 1920 and height > 1080:
                 score += 3
+            elif width > 1280 and height > 720:
+                score += 2
+            elif width > 800 and height > 600:
+                score += 1
+            
+            # More likes indicates quality
+            likes = photo.get('likes', 0)
+            if likes > 1000:
+                score += 3
+            elif likes > 500:
+                score += 2
             elif likes > 100:
-                score += 2
-            elif likes > 10:
                 score += 1
             
-            # Description and tags relevance (enhanced scoring)
-            description = (photo.get('description') or '').lower()
-            alt_description = (photo.get('alt_description') or '').lower()
-            tags = [tag.lower() for tag in photo.get('tags', [])]
-            
-            # Combined text for searching
-            combined_text = f"{description} {alt_description} {' '.join(tags)}"
-            
-            # Higher scoring for exact query matches
-            for query in search_queries:
-                query_lower = query.lower()
-                if query_lower in combined_text:
-                    score += 5  # Exact query match
-                
-                query_words = query_lower.split()
-                word_matches = sum(1 for word in query_words if word in combined_text)
-                score += word_matches * 2  # Points per word match
-            
-            # Bonus for industry-specific terms
-            business_terms = ['business', 'professional', 'modern', 'quality', 'premium', 'artisan', 'craft']
-            food_terms = ['coffee', 'cafe', 'espresso', 'beans', 'brewing', 'barista', 'latte', 'cappuccino']
-            
-            if any(term in combined_text for term in business_terms):
-                score += 2
-            if any(term in combined_text for term in food_terms):
-                score += 3  # Extra bonus for food-related terms
-            
-            # Quality indicators
-            if photo.get('urls', {}).get('full'):
+            # Prefer photos with descriptions
+            if photo.get('description'):
                 score += 1
-            if photo.get('width', 0) >= 1920:  # High resolution
-                score += 2
             
-            # Penalize generic/irrelevant terms
-            generic_terms = ['person holding', 'hand writing', 'whiteboard', 'meeting room', 'office worker']
-            if any(term in combined_text for term in generic_terms):
-                score -= 3
+            # Prefer landscape orientation for most business use
+            if width > height:
+                score += 1
             
-            photo['relevance_score'] = max(score, 0)  # Don't go below 0
+            photo['quality_score'] = score
+            scored_photos.append(photo)
         
-        # Sort by score, then by likes as tiebreaker
-        return sorted(photos, key=lambda x: (x.get('relevance_score', 0), x.get('likes', 0)), reverse=True)
-    
-    async def get_curated_photos(self, per_page: int = 10) -> List[Dict[str, Any]]:
+        # Sort by score (highest first)
+        return sorted(scored_photos, key=lambda x: x.get('quality_score', 0), reverse=True)
+
+    def _get_diverse_fallback_photos(self, business_name: str, industry: str, count: int) -> List[Dict[str, Any]]:
+        """Generate diverse fallback photos when API fails."""
+        fallback_photos = []
+        
+        # Create varied placeholder images with different themes
+        themes = [
+            'professional-workspace',
+            'business-meeting',
+            'modern-office',
+            'team-collaboration',
+            'innovation-concept',
+            'success-lifestyle'
+        ]
+        
+        colors = ['4F46E5', '059669', 'DC2626', 'EA580C', '7C3AED', '0F766E']
+        
+        for i in range(count):
+            theme = themes[i % len(themes)]
+            color = colors[i % len(colors)]
+            
+            photo = {
+                'id': f'fallback_{business_name.lower().replace(" ", "_")}_{i}',
+                'description': f'Professional {industry} {theme.replace("-", " ")} for {business_name}',
+                'url': f'https://via.placeholder.com/800x600/{color}/ffffff?text={theme.replace("-", "+").title()}',
+                'unsplash_url': f'https://via.placeholder.com/800x600/{color}/ffffff?text={theme.replace("-", "+").title()}',
+                'small_url': f'https://via.placeholder.com/400x300/{color}/ffffff?text={theme.replace("-", "+").title()}',
+                'photographer': 'VyralFlow AI',
+                'photographer_username': 'vyralflow',
+                'photographer_url': '#',
+                'likes': random.randint(50, 500),
+                'color': f'#{color}',
+                'width': 800,
+                'height': 600,
+                'quality_score': 1
+            }
+            fallback_photos.append(photo)
+        
+        return fallback_photos
+
+    def _get_fallback_photos(self, query: str, count: int) -> List[Dict[str, Any]]:
+        """Generate fallback photos for a specific query."""
+        return self._get_diverse_fallback_photos(f"Query: {query}", "General", count)
+
+    async def get_curated_photos(self, per_page: int = 6) -> List[Dict[str, Any]]:
         """Get curated photos from Unsplash."""
         try:
-            params = {
-                'per_page': min(per_page, 30),
-                'order_by': 'popular'
-            }
-            
             headers = {
                 'Authorization': f'Client-ID {self.access_key}'
             }
             
-            url = f"{self.base_url}/photos?{urlencode(params)}"
+            url = f"{self.base_url}/photos?per_page={min(per_page, 30)}&order_by=popular"
             
             response = await self.client.get(url, headers=headers)
             response.raise_for_status()
             
             photos = response.json()
             
-            # Format photos
+            # Format photos similar to search results
             formatted_photos = []
             for photo in photos:
                 formatted_photo = {
                     'id': photo.get('id'),
-                    'description': photo.get('description') or photo.get('alt_description', ''),
-                    'urls': {
-                        'small': photo.get('urls', {}).get('small'),
-                        'regular': photo.get('urls', {}).get('regular'),
-                        'full': photo.get('urls', {}).get('full')
-                    },
-                    'user': {
-                        'name': photo.get('user', {}).get('name'),
-                        'username': photo.get('user', {}).get('username')
-                    },
+                    'description': photo.get('description') or photo.get('alt_description', 'Curated professional image'),
+                    'url': photo.get('urls', {}).get('regular'),
+                    'unsplash_url': photo.get('urls', {}).get('regular'),
+                    'small_url': photo.get('urls', {}).get('small'),
+                    'photographer': photo.get('user', {}).get('name'),
+                    'photographer_username': photo.get('user', {}).get('username'),
+                    'photographer_url': photo.get('user', {}).get('links', {}).get('html'),
                     'likes': photo.get('likes', 0),
                     'color': photo.get('color'),
-                    'tags': []
+                    'width': photo.get('width', 0),
+                    'height': photo.get('height', 0)
                 }
                 formatted_photos.append(formatted_photo)
             
@@ -387,80 +417,10 @@ class UnsplashService:
             
         except Exception as e:
             logger.error(f"Failed to get curated photos: {e}")
-            return self._get_fallback_curated_photos(per_page)
-    
-    def _get_fallback_photos(self, query: str, per_page: int) -> List[Dict[str, Any]]:
-        """Get fallback photos when API fails."""
-        fallback_photos = [
-            {
-                'id': f'fallback_{i}',
-                'description': f'Professional {query} image',
-                'urls': {
-                    'small': 'https://via.placeholder.com/400x300',
-                    'regular': 'https://via.placeholder.com/800x600',
-                    'full': 'https://via.placeholder.com/1200x900'
-                },
-                'user': {
-                    'name': 'Stock Photo',
-                    'username': 'stockphoto'
-                },
-                'likes': 100,
-                'color': '#f0f0f0',
-                'tags': [query],
-                'relevance_score': 1
-            }
-            for i in range(min(per_page, 5))
-        ]
-        
-        logger.warning(f"Using fallback photos for query: {query}")
-        return fallback_photos
-    
-    def _get_fallback_photo_suggestions(
-        self,
-        industry: str,
-        campaign_goal: str
-    ) -> List[Dict[str, Any]]:
-        """Get fallback photo suggestions."""
-        suggestions = [
-            {
-                'id': 'fallback_1',
-                'description': f'Professional {industry} business image',
-                'urls': {
-                    'small': 'https://via.placeholder.com/400x300/4a90e2/ffffff?text=Business',
-                    'regular': 'https://via.placeholder.com/800x600/4a90e2/ffffff?text=Business',
-                    'full': 'https://via.placeholder.com/1200x900/4a90e2/ffffff?text=Business'
-                },
-                'user': {'name': 'Business Stock', 'username': 'businessstock'},
-                'likes': 150,
-                'color': '#4a90e2',
-                'tags': [industry, 'business', 'professional'],
-                'relevance_score': 3
-            },
-            {
-                'id': 'fallback_2',
-                'description': f'{industry} marketing campaign visual',
-                'urls': {
-                    'small': 'https://via.placeholder.com/400x300/50c878/ffffff?text=Marketing',
-                    'regular': 'https://via.placeholder.com/800x600/50c878/ffffff?text=Marketing',
-                    'full': 'https://via.placeholder.com/1200x900/50c878/ffffff?text=Marketing'
-                },
-                'user': {'name': 'Marketing Images', 'username': 'marketingimages'},
-                'likes': 200,
-                'color': '#50c878',
-                'tags': [industry, 'marketing', 'campaign'],
-                'relevance_score': 2
-            }
-        ]
-        
-        logger.warning(f"Using fallback photo suggestions for {industry}")
-        return suggestions
-    
-    def _get_fallback_curated_photos(self, per_page: int) -> List[Dict[str, Any]]:
-        """Get fallback curated photos."""
-        return self._get_fallback_photos('business professional', per_page)
-    
+            return self._get_diverse_fallback_photos("Curated", "Business", per_page)
+
     async def close(self):
-        """Close the HTTP client."""
+        """Close HTTP client."""
         await self.client.aclose()
 
 
