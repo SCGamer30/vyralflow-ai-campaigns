@@ -49,7 +49,10 @@ class VisualDesignerAgent(BaseAgent):
             
             # Step 3: Search for relevant images (use Unsplash API)
             await self._update_step_progress(3, 4, "Finding image suggestions")
-            image_suggestions = await self._get_image_suggestions(agent_input, visual_themes)
+            raw_image_suggestions = await self._get_image_suggestions(agent_input, visual_themes)
+            
+            # Convert to proper ImageSuggestion format and ensure exactly 6 images
+            image_suggestions = self._format_image_suggestions(raw_image_suggestions, agent_input)
             
             # Step 4: Create visual style recommendations
             await self._update_step_progress(4, 4, "Creating style recommendations")
@@ -65,7 +68,7 @@ class VisualDesignerAgent(BaseAgent):
                 "visual_themes": visual_themes
             }
             
-            self.logger.info("Visual design completed successfully")
+            self.logger.info(f"Visual design completed successfully with {len(image_suggestions)} images")
             return {
                 'visuals': visual_result,
                 'metadata': {
@@ -949,6 +952,32 @@ class VisualDesignerAgent(BaseAgent):
             }
             return muted_variants.get(hex_color, hex_color)
     
+    def _create_simple_fallback_images(self, agent_input: AgentInput) -> List[Dict[str, Any]]:
+        """Create 6 simple placeholder images as a guaranteed fallback."""
+        colors = ['4F46E5', '059669', 'DC2626', 'EA580C', '7C3AED', '0F766E']
+        themes = ['Workspace', 'Team', 'Innovation', 'Growth', 'Success', 'Professional']
+        
+        images = []
+        for i in range(6):
+            image = {
+                'id': f'fallback_{i+1}',
+                'url': f'https://via.placeholder.com/800x600/{colors[i]}/ffffff?text={themes[i]}',
+                'description': f'{themes[i]} - {agent_input.industry} imagery for {agent_input.business_name}',
+                'tags': [agent_input.industry, 'business', themes[i].lower()],
+                'photographer': 'VyralFlow AI',
+                'source': 'placeholder',
+                'unsplash_url': f'https://via.placeholder.com/800x600/{colors[i]}/ffffff?text={themes[i]}',
+                'small_url': f'https://via.placeholder.com/400x300/{colors[i]}/ffffff?text={themes[i]}',
+                'photographer_url': '#',
+                'likes': 100 + i * 50,
+                'color': f'#{colors[i]}',
+                'width': 800,
+                'height': 600
+            }
+            images.append(image)
+        
+        return images
+
     async def _get_image_suggestions(
         self,
         agent_input: AgentInput,
@@ -958,31 +987,103 @@ class VisualDesignerAgent(BaseAgent):
         try:
             self.logger.info(f"🖼️ Generating curated image suggestions for {agent_input.business_name}")
             
-            # Use the real Unsplash service with AI-powered search queries
-            image_suggestions = await unsplash_service.get_photo_suggestions(
-                business_name=agent_input.business_name,
-                industry=agent_input.industry,
-                campaign_goal=agent_input.campaign_goal,
-                visual_themes=visual_themes
-            )
-            
-            if image_suggestions and len(image_suggestions) >= 6:
-                self.logger.info(f"✅ Successfully retrieved {len(image_suggestions)} curated images from Unsplash API")
-                return image_suggestions[:6]  # Ensure exactly 6 images
-            else:
-                self.logger.warning(f"⚠️ Unsplash API returned {len(image_suggestions) if image_suggestions else 0} images, using enhanced fallback")
+            # Try to use the real Unsplash service if available
+            try:
+                image_suggestions = await unsplash_service.get_photo_suggestions(
+                    business_name=agent_input.business_name,
+                    industry=agent_input.industry,
+                    campaign_goal=agent_input.campaign_goal,
+                    visual_themes=visual_themes
+                )
                 
-                # Enhanced fallback with diverse, professional images
-                fallback_images = self._get_enhanced_fallback_images(agent_input, visual_themes)
+                if image_suggestions and len(image_suggestions) >= 1:
+                    self.logger.info(f"✅ Retrieved {len(image_suggestions)} images from Unsplash API")
+                    
+                    # Ensure we have exactly 6 images
+                    if len(image_suggestions) < 6:
+                        fallback_count = 6 - len(image_suggestions)
+                        fallback_images = self._create_simple_fallback_images(agent_input)
+                        image_suggestions.extend(fallback_images[:fallback_count])
+                    
+                    return image_suggestions[:6]
+                else:
+                    raise Exception("No images returned from Unsplash")
+                    
+            except Exception as unsplash_error:
+                self.logger.warning(f"Unsplash API failed: {unsplash_error}")
+                
+                # Use simple fallback images
+                fallback_images = self._create_simple_fallback_images(agent_input)
+                self.logger.info(f"🔄 Using simple fallback: generated {len(fallback_images)} placeholder images")
                 return fallback_images
                 
         except Exception as e:
-            self.logger.error(f"❌ Image suggestions failed: {e}")
+            self.logger.error(f"❌ All image generation failed: {e}")
             
-            # Use enhanced fallback when everything else fails
-            fallback_images = self._get_enhanced_fallback_images(agent_input, visual_themes)
-            self.logger.info(f"🔄 Using enhanced fallback: generated {len(fallback_images)} diverse images")
+            # Final guarantee - create simple placeholder images
+            fallback_images = self._create_simple_fallback_images(agent_input)
+            self.logger.info(f"🛡️ Emergency fallback: created {len(fallback_images)} simple images")
             return fallback_images
+
+    def _format_image_suggestions(self, raw_suggestions: List[Dict[str, Any]], agent_input: AgentInput) -> List[Dict[str, Any]]:
+        """
+        Formats raw image suggestions into the correct format for the frontend.
+        Ensures exactly 6 images are returned.
+        """
+        formatted_suggestions = []
+        
+        # If we don't have enough suggestions, create fallbacks
+        if len(raw_suggestions) < 6:
+            raw_suggestions.extend(self._get_enhanced_fallback_images(agent_input, [])[:6-len(raw_suggestions)])
+        
+        for i, raw_suggestion in enumerate(raw_suggestions[:6]):  # Take only first 6
+            # Extract the URL with fallbacks
+            url = (raw_suggestion.get('url') or 
+                   raw_suggestion.get('unsplash_url') or 
+                   raw_suggestion.get('urls', {}).get('regular') or
+                   raw_suggestion.get('urls', {}).get('small') or
+                   f'https://via.placeholder.com/800x600/4F46E5/ffffff?text=Image+{i+1}')
+            
+            # Extract description
+            description = (raw_suggestion.get('description') or 
+                          raw_suggestion.get('alt_description') or
+                          f'Professional {agent_input.industry} image for {agent_input.business_name}')
+            
+            # Extract photographer
+            photographer = (raw_suggestion.get('photographer') or
+                           raw_suggestion.get('user', {}).get('name') if raw_suggestion.get('user') else None or
+                           'Professional Stock')
+            
+            # Extract tags
+            tags = raw_suggestion.get('tags', [])
+            if isinstance(tags, list) and len(tags) > 0:
+                if isinstance(tags[0], dict):
+                    tags = [tag.get('title', str(tag)) for tag in tags]
+            else:
+                tags = [agent_input.industry, 'business', 'professional']
+            
+            # Create the formatted suggestion matching the ImageSuggestion model
+            formatted_suggestion = {
+                'url': url,
+                'description': description[:200],  # Truncate long descriptions
+                'tags': tags[:5],  # Limit tags
+                'photographer': photographer,
+                'source': 'unsplash',
+                # Add extra fields that the frontend expects
+                'id': raw_suggestion.get('id', f'img_{i}'),
+                'unsplash_url': url,
+                'small_url': raw_suggestion.get('small_url', url),
+                'photographer_url': raw_suggestion.get('photographer_url', '#'),
+                'likes': raw_suggestion.get('likes', 0),
+                'color': raw_suggestion.get('color', '#CCCCCC'),
+                'width': raw_suggestion.get('width', 800),
+                'height': raw_suggestion.get('height', 600)
+            }
+            
+            formatted_suggestions.append(formatted_suggestion)
+        
+        self.logger.info(f"Formatted {len(formatted_suggestions)} image suggestions")
+        return formatted_suggestions
 
     def _get_enhanced_fallback_images(
         self,
